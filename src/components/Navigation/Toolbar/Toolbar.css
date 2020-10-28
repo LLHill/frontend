@@ -1,0 +1,69 @@
+.ToolbarLogo {
+  height: 30px;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ToolbarLogo {
+    animation: Toolbar-logo-spin infinite 0.5s linear;
+  }
+}
+
+.ToolbarHeader {
+  background-color: #282c34;
+  height: 8vh;
+  left: 0;
+  top: 0;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  box-sizing: border-box;
+  z-index: 90;
+}
+
+.ToolbarHeader nav {
+  height: 100%;
+}
+
+.DrawerToggle {
+  width: 40px;
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.DrawerToggle div {
+  width: 90%;
+  height: 3px;
+  background-color: white;
+}
+
+@media (min-width: 500px) {
+  .DrawerToggle {
+      display: none;
+  }
+}
+
+@media (max-width: 499px) {
+  .DesktopOnly {
+    display: none;
+  }
+}
+
+@keyframes Toolbar-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
