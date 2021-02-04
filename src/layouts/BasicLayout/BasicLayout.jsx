@@ -12,7 +12,7 @@ export default class BasicLayout extends Component {
     prop: PropTypes
   };
 
-  
+
   render() {
 
     return (
@@ -21,7 +21,12 @@ export default class BasicLayout extends Component {
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
-            <NavBreadcrumb />
+            <NavBreadcrumb
+              elements={[
+                { key: 1, text: 'Admin', to: '/admin' },
+                { key: 2, text: 'Dashboard' },
+              ]}
+            />
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
               Bill is a cat.
               {this.props.children}
