@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
-export default class Dashboard extends Component {
+export default class Notices extends Component {
   render() {
     return (
       <div>
-        <NavBreadcrumb
+        <NavBreadcrumb 
           elements={[
             { key: 1, text: 'Admin', to: '/admin' },
-            { key: 2, text: 'Dashboard' },
+            { key: 2, text: 'Notices' },
           ]}
         />
       </div>

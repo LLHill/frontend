@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 
@@ -11,9 +11,8 @@ export default class App extends Component {
     return (
       <Router>
         <Switch>
-          <Route path="/" exact component={LecturerLayout} />
           <Route path="/admin" component={AdminLayout} />
-          <Redirect to="/admin" />
+          <Route path="/" component={LecturerLayout} />
         </Switch>
       </Router>
     );
