@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Switch, Route } from "react-router-dom";
 import PropTypes from 'prop-types';
 
-import { Layout, Avatar, Badge, Typography } from 'antd';
+import { Layout, Typography } from 'antd';
 import {
   DesktopOutlined,
   NotificationOutlined,
@@ -18,9 +18,8 @@ import Subjects from '../../pages/admin/Subjects/Subjects';
 import Students from '../../pages/admin/Students/Students';
 import Notices from '../../pages/admin/Notices/Notices';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { Title } = Typography;
-
 export default class AdminLayout extends Component {
   static propTypes = {
     prop: PropTypes
@@ -41,15 +40,14 @@ export default class AdminLayout extends Component {
           ]}
         />
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} >
-            <Title style={{ margin: '0 1.5rem', color: '#FFFFFF' }}>Presence</Title>
+          {/* <Header className="site-layout-background" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} >
             <Badge count={5} style={{ margin: '0 1.5rem' }}>
               <Avatar
                 size={{ xs: 10, sm: 14, md: 18, lg: 30, xl: 34, xxl: 36 }}
                 style={{ color: '#f56a00', backgroundColor: '#fde3cf', margin: '0 1.5rem' }}
               >C</Avatar>
             </Badge>
-          </Header>
+          </Header> */}
           <Content style={{ margin: '0 16px' }}>
             <Switch>
               <Route path={`${path}`} exact component={Dashboard} />
@@ -57,6 +55,7 @@ export default class AdminLayout extends Component {
               <Route path={`${path}/courses`} component={Courses} />
               <Route path={`${path}/students`} component={Students} />
               <Route path={`${path}/subjects`} component={Subjects} />
+              <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
           </Content>
           <Footer style={{ textAlign: 'center' }}>Presence ©2021 Created by HCMIU</Footer>

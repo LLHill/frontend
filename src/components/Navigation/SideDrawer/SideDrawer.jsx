@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types'
 
 import { Layout, Menu } from 'antd';
+import Title from 'antd/lib/typography/Title';
 
 const { Sider } = Layout;
 // const { SubMenu } = Menu;
@@ -34,15 +35,14 @@ export default class SideDrawer extends Component {
     return (
       <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
         <div className="logo" />
+        <Title level={2} style={{ padding: '1rem', color: 'white' }}>Presence</Title>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
           {
-            elements.map(e => {
-              return (
-                <Menu.Item key={e.key} icon={e.icon}>
-                  <Link to={e.to}>{e.text}</Link>
-                </Menu.Item>
-              );
-            })
+            elements.map(e => (
+              <Menu.Item key={e.key} icon={e.icon}>
+                <Link to={e.to}>{e.text}</Link>
+              </Menu.Item>
+            ))
           }
           {/* <SubMenu key="sub1" icon={<UserOutlined />} title="User">
             <Menu.Item key="3">Tom</Menu.Item>
@@ -52,5 +52,5 @@ export default class SideDrawer extends Component {
         </Menu>
       </Sider>
     )
-  }
+  };
 }
