@@ -8,6 +8,7 @@ import {
   NotificationOutlined,
   BookOutlined,
   ReadOutlined,
+  UserOutlined,
   TeamOutlined
 } from '@ant-design/icons';
 
@@ -17,6 +18,7 @@ import Courses from '../../pages/admin/Courses/Courses';
 import Subjects from '../../pages/admin/Subjects/Subjects';
 import Students from '../../pages/admin/Students/Students';
 import Notices from '../../pages/admin/Notices/Notices';
+import Lecturers from '../../pages/admin/Lecturers/Lecturers';
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
@@ -33,10 +35,11 @@ export default class AdminLayout extends Component {
         <SideDrawer
           elements={[
             { key: 1, text: 'Dashboard', to: `${path}`, icon: <DesktopOutlined /> },
-            { key: 2, text: 'Notices', to: `${path}/notices`, icon: <NotificationOutlined /> },
+            { key: 2, text: 'Lecturers', to: `${path}/lecturers`, icon: <UserOutlined /> },
             { key: 3, text: 'Subjects', to: `${path}/subjects`, icon: <BookOutlined /> },
             { key: 4, text: 'Courses', to: `${path}/courses`, icon: <ReadOutlined /> },
             { key: 5, text: 'Students', to: `${path}/students`, icon: <TeamOutlined /> },
+            { key: 6, text: 'Notices', to: `${path}/notices`, icon: <NotificationOutlined /> },
           ]}
         />
         <Layout className="site-layout">
@@ -55,6 +58,7 @@ export default class AdminLayout extends Component {
               <Route path={`${path}/courses`} component={Courses} />
               <Route path={`${path}/students`} component={Students} />
               <Route path={`${path}/subjects`} component={Subjects} />
+              <Route path={`${path}/lecturers`} component={Lecturers} />
               <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
           </Content>

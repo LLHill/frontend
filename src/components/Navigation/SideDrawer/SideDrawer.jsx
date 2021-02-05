@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types'
 
-import { Layout, Menu } from 'antd';
+import logo from '../../../assets/images/hcmiulogo.png'
+import { Layout, Menu, Image } from 'antd';
 import Title from 'antd/lib/typography/Title';
 
 const { Sider } = Layout;
@@ -34,8 +35,10 @@ export default class SideDrawer extends Component {
     const { elements } = this.props;
     return (
       <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-        <div className="logo" />
-        <Title level={2} style={{ padding: '1rem', color: 'white' }}>Presence</Title>
+        <div style={{ display:'flex', flexDirection:'row', justifyContent:'space-evenly', padding: '0.5rem'}}>
+          <Image src={logo} alt='logo' width={40} />
+          <Title level={2} style={{ color: 'white' }}>Presence</Title>
+        </div>
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
           {
             elements.map(e => (
