@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types'
 
 import logo from '../../../assets/images/hcmiulogo.png'
-import { Layout, Menu, Image, Typography, Switch, Divider } from 'antd';
+import { Layout, Menu, Image, Typography, Switch } from 'antd';
 import { PoweroffOutlined, BulbOutlined } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -58,7 +58,7 @@ export default class SideDrawer extends Component {
               </Menu.Item>
             ))
           }
-          <Divider />
+          <Menu.Divider style={{backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height:'18rem'}} />
           <Menu.Item key={'darkmode'} icon={<BulbOutlined />}>
             Dark Mode
             <Switch

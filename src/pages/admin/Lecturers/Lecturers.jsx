@@ -118,7 +118,7 @@ export default class Lecturers extends Component {
           <Title level={3}>Lecturer List</Title>
           <Button type='primary' onClick={this.toggleForm}>Add new lecturer</Button>
         </div>
-        <Table dataSource={lecturers} columns={columns} />
+        <Table dataSource={lecturers} columns={columns} rowKey='_id' />
         <Modal
           title={'Create New Lecturer'}
           visible={showForm}
@@ -128,6 +128,7 @@ export default class Lecturers extends Component {
         >
           <Form
             {...layout}
+            id={'lecturerForm'}
             onFinish={this.createLecturerHandler}
             onFinishFailed={null}
           >
