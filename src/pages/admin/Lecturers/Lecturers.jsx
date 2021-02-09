@@ -5,15 +5,6 @@ import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBread
 
 import axios from '../../../axios-instance'
 
-const dataSource = [
-  {
-    _id: 1,
-    name: 'Hùng Gấu Dễ Thương',
-    email: 'test@lecturer.com',
-    courseNo: 4
-  }
-];
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 16 },
@@ -26,13 +17,17 @@ const tailLayout = {
 export default class Lecturers extends Component {
   state = {
     lecturers: [],
-    showForm: true,
+    showForm: false,
     confirmLoading: false,
   }
 
   componentDidMount() {
     axios.get('/admin/lecturers')
       .then(res => res.data)
+      // .then(resData => {
+      //   let lecturers = resData.lecturers;
+      //   lecturers.map(lecturer => )
+      // })
       .then(resData => this.setState({ lecturers: resData.lecturers }))
       .catch(err => console.log(err));
   }
@@ -43,6 +38,7 @@ export default class Lecturers extends Component {
     console.log(values)
     axios.post('/admin/create-lecturer', values)
       .then(res => console.log(res));
+    this.setState({ lecturers: [...this.state.lecturers, values], showForm: false })
   }
 
   deleteLecturer = (lecturerId) => {
@@ -91,11 +87,12 @@ export default class Lecturers extends Component {
           <Title level={3}>Lecturer List</Title>
           <Button type='primary' onClick={this.toggleForm}>Add new lecturer</Button>
         </div>
-        <Table dataSource={[...lecturers, ...dataSource]} columns={columns} />
+        <Table dataSource={lecturers} columns={columns} />
         <Modal
           title={'Create New Lecturer'}
           visible={showForm}
           confirmLoading={confirmLoading}
+          onCancel={this.toggleForm}
           footer={[]}
         >
           <Form
@@ -144,7 +141,7 @@ export default class Lecturers extends Component {
               {/* <Button
                 htmlType='reset'
               >Reset</Button> */}
-              <Button 
+              <Button
                 type='link'
                 onClick={this.toggleForm}
               >Cancel</Button>
