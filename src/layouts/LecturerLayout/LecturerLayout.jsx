@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Switch, Route } from "react-router-dom";
-import PropTypes from 'prop-types';
 
 import { Layout, Typography } from 'antd';
 import {
@@ -19,10 +18,6 @@ const { Content, Footer } = Layout;
 const { Title } = Typography;
 
 export default class LecturerLayout extends Component {
-  static propTypes = {
-    prop: PropTypes
-  };
-
   render() {
     return (
       <Layout style={{ minHeight: '100vh' }}>

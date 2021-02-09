@@ -107,7 +107,7 @@ export default class App extends Component {
           {
             isAdmin ?
               <Route path='/'
-                render={props => (
+                render={() => (
                   <AdminLayout
                     token={token}
                     userId={userId}
@@ -116,7 +116,7 @@ export default class App extends Component {
                 )}
               /> :
               <Route path='/'
-                render={props => (
+                render={() => (
                   <LecturerLayout
                     token={token}
                     userId={userId}
@@ -125,6 +125,7 @@ export default class App extends Component {
                 )}
               />
           }
+          <Redirect to='/' />
         </Switch>
       );
     return (

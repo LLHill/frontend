@@ -8,7 +8,7 @@ export default class Dashboard extends Component {
       <div>
         <NavBreadcrumb
           elements={[
-            { key: 1, text: 'Admin', to: '/admin' },
+            { key: 1, text: 'Admin', to: '/' },
             { key: 2, text: 'Dashboard' },
           ]}
         />
