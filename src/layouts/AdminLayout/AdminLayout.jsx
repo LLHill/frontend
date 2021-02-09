@@ -39,6 +39,7 @@ export default class AdminLayout extends Component {
             { key: 5, text: 'Students', to: `/students`, icon: <TeamOutlined /> },
             { key: 6, text: 'Notices', to: `/notices`, icon: <NotificationOutlined /> },
           ]}
+          onLogout={this.props.onLogout}
         />
         <Layout className="site-layout">
           {/* <Header className="site-layout-background" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} >

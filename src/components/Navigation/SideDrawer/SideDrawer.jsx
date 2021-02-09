@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types'
 
 import logo from '../../../assets/images/hcmiulogo.png'
-import { Layout, Menu, Image } from 'antd';
-import Title from 'antd/lib/typography/Title';
+import { Layout, Menu, Image, Typography, Switch, Divider } from 'antd';
+import { PoweroffOutlined, BulbOutlined } from '@ant-design/icons';
 
 const { Sider } = Layout;
-// const { SubMenu } = Menu;
+const { Title } = Typography;
 
 export default class SideDrawer extends Component {
   static propTypes = {
@@ -23,6 +23,13 @@ export default class SideDrawer extends Component {
 
   state = {
     collapsed: false,
+    theme: 'dark'
+  };
+
+  changeTheme = value => {
+    this.setState({
+      theme: value ? 'dark' : 'light',
+    });
   };
 
   onCollapse = collapsed => {
@@ -31,15 +38,19 @@ export default class SideDrawer extends Component {
   };
 
   render() {
-    const { collapsed } = this.state;
-    const { elements } = this.props;
+    const { collapsed, theme } = this.state;
+    const { elements, onLogout } = this.props;
     return (
-      <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-        <div style={{ display:'flex', flexDirection:'row', justifyContent:'space-evenly', padding: '0.5rem'}}>
-          <Image src={logo} alt='logo' width={40} />
-          <Title level={2} style={{ color: 'white' }}>Presence</Title>
-        </div>
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
+      <Sider theme={theme} collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
+        {
+          collapsed ?
+            <Image preview={false} src={logo} alt='logo' width={40} style={{ marginTop: '10px', marginLeft: '20px' }} /> :
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', padding: '0.5rem' }}>
+              <Image preview={false} src={logo} alt='logo' width={40} />
+              <Title level={2} style={{ color: theme === 'dark' ? 'white' : '#1167b1' }}>Presence</Title>
+            </div>
+        }
+        <Menu theme={theme} defaultSelectedKeys={['1']} mode="inline">
           {
             elements.map(e => (
               <Menu.Item key={e.key} icon={e.icon}>
@@ -47,11 +58,18 @@ export default class SideDrawer extends Component {
               </Menu.Item>
             ))
           }
-          {/* <SubMenu key="sub1" icon={<UserOutlined />} title="User">
-            <Menu.Item key="3">Tom</Menu.Item>
-            <Menu.Item key="4">Bill</Menu.Item>
-            <Menu.Item key="5"><Link>Ben</Link></Menu.Item>
-          </SubMenu> */}
+          <Divider />
+          <Menu.Item key={'darkmode'} icon={<BulbOutlined />}>
+            Dark Mode
+            <Switch
+              checked={this.state.theme === 'dark'}
+              onChange={this.changeTheme}
+              style={{ marginLeft: '1rem' }}
+            />
+          </Menu.Item>
+          <Menu.Item key={'logout'} icon={<PoweroffOutlined />} danger onClick={onLogout}>
+            Logout
+          </Menu.Item>
         </Menu>
       </Sider>
     )

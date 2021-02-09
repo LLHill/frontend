@@ -111,6 +111,7 @@ export default class App extends Component {
                   <AdminLayout
                     token={token}
                     userId={userId}
+                    onLogout={this.logoutHandler}
                   />
                 )}
               /> :
@@ -119,6 +120,7 @@ export default class App extends Component {
                   <LecturerLayout
                     token={token}
                     userId={userId}
+                    onLogout={this.logoutHandler}
                   />
                 )}
               />

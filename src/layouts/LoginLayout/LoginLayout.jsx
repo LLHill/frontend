@@ -52,7 +52,10 @@ export default class LoginLayout extends Component {
               </Form.Item>
               <Form.Item {...tailLayout}>
                 <Button type="primary" htmlType="submit">
-                  Submit
+                  Login
+                </Button>
+                <Button type='link'>
+                  Forgot your password D:
                 </Button>
               </Form.Item>
             </Form>
