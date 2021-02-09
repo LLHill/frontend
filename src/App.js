@@ -54,6 +54,21 @@ export default class App extends Component {
       })
       .then(resData => {
         console.log(resData);
+        this.setState({
+          isAuth: true,
+          token: resData.token,
+          userId: resData.userId,
+          isAdmin: isAdminLogin
+        });
+        localStorage.setItem('token', resData.token);
+        localStorage.setItem('isAdmin', isAdminLogin);
+        localStorage.setItem('userId', resData.userId);
+        const remainingMilliseconds = 60 * 60 * 1000; // 1hour
+        const expiryDate = new Date(
+          new Date().getTime() + remainingMilliseconds
+        );
+        localStorage.setItem('expiryDate', expiryDate.toISOString());
+        this.setAutoLogout(remainingMilliseconds);
       })
       .catch(err => console.log(err));
   };
@@ -77,7 +92,7 @@ export default class App extends Component {
       <Switch>
         <Route exact path='/'
           render={props => (
-            <LoginLayout 
+            <LoginLayout
               onLogin={this.loginHandler}
             />
           )}
@@ -89,23 +104,25 @@ export default class App extends Component {
     if (isAuth)
       routes = (
         <Switch>
-          {isAdmin ?
-          <Route path='/' 
-            render={props => (
-              <LecturerLayout
-                token={token}
-                userId={userId}
+          {
+            isAdmin ?
+              <Route path='/'
+                render={props => (
+                  <AdminLayout
+                    token={token}
+                    userId={userId}
+                  />
+                )}
+              /> :
+              <Route path='/'
+                render={props => (
+                  <LecturerLayout
+                    token={token}
+                    userId={userId}
+                  />
+                )}
               />
-            )}
-          /> :
-          <Route path='/' 
-            render={props => (
-              <AdminLayout 
-                token={token}
-                userId={userId}
-              />
-            )}
-          />}
+          }
         </Switch>
       );
     return (

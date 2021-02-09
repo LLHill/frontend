@@ -28,18 +28,16 @@ export default class AdminLayout extends Component {
   };
 
   render() {
-    const { path } = this.props.match
-
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <SideDrawer
           elements={[
-            { key: 1, text: 'Dashboard', to: `${path}`, icon: <DesktopOutlined /> },
-            { key: 2, text: 'Lecturers', to: `${path}/lecturers`, icon: <UserOutlined /> },
-            { key: 3, text: 'Subjects', to: `${path}/subjects`, icon: <BookOutlined /> },
-            { key: 4, text: 'Courses', to: `${path}/courses`, icon: <ReadOutlined /> },
-            { key: 5, text: 'Students', to: `${path}/students`, icon: <TeamOutlined /> },
-            { key: 6, text: 'Notices', to: `${path}/notices`, icon: <NotificationOutlined /> },
+            { key: 1, text: 'Dashboard', to: `/`, icon: <DesktopOutlined /> },
+            { key: 2, text: 'Lecturers', to: `/lecturers`, icon: <UserOutlined /> },
+            { key: 3, text: 'Subjects', to: `/subjects`, icon: <BookOutlined /> },
+            { key: 4, text: 'Courses', to: `/courses`, icon: <ReadOutlined /> },
+            { key: 5, text: 'Students', to: `/students`, icon: <TeamOutlined /> },
+            { key: 6, text: 'Notices', to: `/notices`, icon: <NotificationOutlined /> },
           ]}
         />
         <Layout className="site-layout">
@@ -53,12 +51,12 @@ export default class AdminLayout extends Component {
           </Header> */}
           <Content style={{ margin: '0 16px' }}>
             <Switch>
-              <Route path={`${path}`} exact component={Dashboard} />
-              <Route path={`${path}/notices`} component={Notices} />
-              <Route path={`${path}/courses`} component={Courses} />
-              <Route path={`${path}/students`} component={Students} />
-              <Route path={`${path}/subjects`} component={Subjects} />
-              <Route path={`${path}/lecturers`} component={Lecturers} />
+              <Route path={`/`} exact component={Dashboard} />
+              <Route path={`/notices`} component={Notices} />
+              <Route path={`/courses`} component={Courses} />
+              <Route path={`/students`} component={Students} />
+              <Route path={`/subjects`} component={Subjects} />
+              <Route path={`/lecturers`} component={Lecturers} />
               <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
           </Content>
