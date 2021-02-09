@@ -24,10 +24,10 @@ export default class Lecturers extends Component {
   componentDidMount() {
     axios.get('/admin/lecturers')
       .then(res => res.data)
-      // .then(resData => {
-      //   let lecturers = resData.lecturers;
-      //   lecturers.map(lecturer => )
-      // })
+      .then(resData => {
+        console.log(resData)
+        return resData
+      })
       .then(resData => this.setState({ lecturers: resData.lecturers }))
       .catch(err => console.log(err));
   }
@@ -37,12 +37,30 @@ export default class Lecturers extends Component {
   createLecturerHandler = (values) => {
     console.log(values)
     axios.post('/admin/create-lecturer', values)
-      .then(res => console.log(res));
-    this.setState({ lecturers: [...this.state.lecturers, values], showForm: false })
+      .then(res => {
+        console.log(res)
+        if (res.status === 201)
+          this.setState({ lecturers: [...this.state.lecturers, values], showForm: false });
+      })
+      .catch(err => console.log(err));
   }
 
-  deleteLecturer = (lecturerId) => {
-    console.log('Deleting lecturer: ' + lecturerId)
+  updatePasswordHandler = (lecturerId) => {
+    const newPassword = Math.random().toString(36).slice(-8);
+    console.log(newPassword)
+    //axios
+  }
+
+  deleteLecturerHandler = (lecturerId) => {
+    console.log(lecturerId)
+    axios.delete()
+    axios.delete('/admin/lecturer/' + lecturerId)
+      .then(res => {
+        console.log(res)
+        if (res.status === 200)
+          this.setState({ lecturers: this.state.lecturers.filter(lec => lec._id !== lecturerId) })
+      })
+      .catch(err => console.log(err));
   }
 
   render() {
@@ -69,7 +87,8 @@ export default class Lecturers extends Component {
         key: 'action',
         render: (text, record) => (
           <Space size='middle'>
-            <Button onClick={() => this.deleteLecturer(record._id)} type='link'>Delete</Button>
+            <Button onClick={() => this.updatePasswordHandler(record._id)}>Update Password</Button>
+            <Button onClick={() => this.deleteLecturerHandler(record._id)} danger type='link'>Delete</Button>
           </Space>
         )
       }
