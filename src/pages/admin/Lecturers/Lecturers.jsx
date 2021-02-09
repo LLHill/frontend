@@ -28,19 +28,31 @@ export default class Lecturers extends Component {
         console.log(resData)
         return resData
       })
-      .then(resData => this.setState({ lecturers: resData.lecturers }))
+      .then(resData => this.setLecturers(resData.lecturers))
       .catch(err => console.log(err));
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
+
+  setLecturers = (lecturerData) => {
+    const lecturers = lecturerData.map(lec => {
+      return {
+        ...lec,
+        courseNo: lec.courseIds.length
+      }
+    });
+    this.setState({ lecturers });
+  }
 
   createLecturerHandler = (values) => {
     console.log(values)
     axios.post('/admin/create-lecturer', values)
       .then(res => {
         console.log(res)
-        if (res.status === 201)
-          this.setState({ lecturers: [...this.state.lecturers, values], showForm: false });
+        if (res.status === 201) {
+          this.setState({ showForm: false });
+          this.setLecturers([...this.state.lecturers, res.data.lecturer]);
+        }
       })
       .catch(err => console.log(err));
   }
@@ -58,7 +70,7 @@ export default class Lecturers extends Component {
       .then(res => {
         console.log(res)
         if (res.status === 200)
-          this.setState({ lecturers: this.state.lecturers.filter(lec => lec._id !== lecturerId) })
+          this.setLecturers(this.state.lecturers.filter(lec => lec._id !== lecturerId));
       })
       .catch(err => console.log(err));
   }
