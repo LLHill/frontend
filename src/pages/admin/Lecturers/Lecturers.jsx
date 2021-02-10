@@ -1,5 +1,6 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
+import { Link } from 'react-router-dom'
 import { Table, Space, Button, Form, Input, Modal } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
@@ -29,7 +30,7 @@ export default class Lecturers extends Component {
         return resData
       })
       .then(resData => this.setLecturers(resData.lecturers))
-      .catch(err => console.log(err));
+      .catch(err => { throw new Error(err) });
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
@@ -54,7 +55,7 @@ export default class Lecturers extends Component {
           this.setLecturers([...this.state.lecturers, res.data.lecturer]);
         }
       })
-      .catch(err => console.log(err));
+      .catch(err => { throw new Error(err) });
   }
 
   updatePasswordHandler = (lecturerId) => {
@@ -72,7 +73,7 @@ export default class Lecturers extends Component {
         if (res.status === 200)
           this.setLecturers(this.state.lecturers.filter(lec => lec._id !== lecturerId));
       })
-      .catch(err => console.log(err));
+      .catch(err => { throw new Error(err) });
   }
 
   render() {
@@ -99,12 +100,77 @@ export default class Lecturers extends Component {
         key: 'action',
         render: (text, record) => (
           <Space size='middle'>
+            <Button type='primary'><Link to={`/courses?lecturerId=${record._id}`}>View courses</Link></Button>
             <Button onClick={() => this.updatePasswordHandler(record._id)}>Update Password</Button>
             <Button onClick={() => this.deleteLecturerHandler(record._id)} danger type='link'>Delete</Button>
           </Space>
         )
       }
     ];
+
+    const form = (
+      <Modal
+        title={'Create New Lecturer'}
+        visible={showForm}
+        confirmLoading={confirmLoading}
+        onCancel={this.toggleForm}
+        footer={[]}
+      >
+        <Form
+          {...layout}
+          id={'lecturerForm'}
+          onFinish={this.createLecturerHandler}
+          onFinishFailed={null}
+        >
+          <Form.Item
+            label='Full name'
+            name='name'
+            rules={[{
+              required: true,
+              message: 'Please input the full name of lecturer!'
+            }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{
+              required: true,
+              message: 'Please input a valid email!'
+            }, {
+              type: 'email',
+              message: 'Please input a valid email!'
+            }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[{
+              required: true,
+              message: 'Please input random password!'
+            }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item {...tailLayout}>
+            <Button
+              type='primary'
+              htmlType='submit'
+            >Submit</Button>
+            {/* <Button
+                htmlType='reset'
+              >Reset</Button> */}
+            <Button
+              type='link'
+              onClick={this.toggleForm}
+            >Cancel</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    );
 
     return (
       <Fragment>
@@ -119,67 +185,7 @@ export default class Lecturers extends Component {
           <Button type='primary' onClick={this.toggleForm}>Add new lecturer</Button>
         </div>
         <Table dataSource={lecturers} columns={columns} rowKey='_id' />
-        <Modal
-          title={'Create New Lecturer'}
-          visible={showForm}
-          confirmLoading={confirmLoading}
-          onCancel={this.toggleForm}
-          footer={[]}
-        >
-          <Form
-            {...layout}
-            id={'lecturerForm'}
-            onFinish={this.createLecturerHandler}
-            onFinishFailed={null}
-          >
-            <Form.Item
-              label='Full name'
-              name='name'
-              rules={[{
-                required: true,
-                message: 'Please input the full name of lecturer!'
-              }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{
-                required: true,
-                message: 'Please input a valid email!'
-              }, {
-                type: 'email',
-                message: 'Please input a valid email!'
-              }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[{
-                required: true,
-                message: 'Please input random password!'
-              }]}
-            >
-              <Input.Password />
-            </Form.Item>
-            <Form.Item {...tailLayout}>
-              <Button
-                type='primary'
-                htmlType='submit'
-              >Submit</Button>
-              {/* <Button
-                htmlType='reset'
-              >Reset</Button> */}
-              <Button
-                type='link'
-                onClick={this.toggleForm}
-              >Cancel</Button>
-            </Form.Item>
-          </Form>
-        </Modal>
+        {form}
       </Fragment>
     )
   };

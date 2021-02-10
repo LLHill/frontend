@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import React, { Component, Fragment } from 'react';
+import { Switch, Route, Redirect, withRouter } from "react-router-dom";
 
 import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 
@@ -8,8 +8,9 @@ import LecturerLayout from './layouts/LecturerLayout/LecturerLayout';
 import LoginLayout from './layouts/LoginLayout/LoginLayout';
 
 import axios from './axios-instance';
+import { ErrorHandler } from './components/ErrorHandler/ErrorHandler';
 
-export default class App extends Component {
+class App extends Component {
   state = {
     isAuth: false,
     token: null,
@@ -70,7 +71,13 @@ export default class App extends Component {
         localStorage.setItem('expiryDate', expiryDate.toISOString());
         this.setAutoLogout(remainingMilliseconds);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err)
+        this.setState({
+          isAuth: false,
+          error: err
+        })
+      });
   };
 
   logoutHandler = () => {
@@ -85,8 +92,12 @@ export default class App extends Component {
     setTimeout(() => this.logoutHandler(), milliseconds);
   };
 
+  errorHandler = () => {
+    this.setState({ error: null });
+  }
+
   render() {
-    const { isAuth, token, userId, isAdmin } = this.state;
+    const { isAuth, token, userId, isAdmin, error } = this.state;
 
     let routes = (
       <Switch>
@@ -129,11 +140,14 @@ export default class App extends Component {
         </Switch>
       );
     return (
-      <Router>
+      <Fragment>
+        <ErrorHandler error={error} onHandle={this.errorHandler} />
         <Switch>
           {routes}
         </Switch>
-      </Router>
+      </Fragment>
     );
   }
-}
+};
+
+export default withRouter(App);
