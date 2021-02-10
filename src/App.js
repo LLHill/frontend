@@ -92,6 +92,10 @@ class App extends Component {
     setTimeout(() => this.logoutHandler(), milliseconds);
   };
 
+  setError = (error) => {
+    this.setState({ error });
+  }
+
   errorHandler = () => {
     this.setState({ error: null });
   }
@@ -105,6 +109,7 @@ class App extends Component {
           render={props => (
             <LoginLayout
               onLogin={this.loginHandler}
+              onError={this.setError}
             />
           )}
         />
@@ -123,6 +128,7 @@ class App extends Component {
                     token={token}
                     userId={userId}
                     onLogout={this.logoutHandler}
+                    onError={this.setError}
                   />
                 )}
               /> :
@@ -132,6 +138,7 @@ class App extends Component {
                     token={token}
                     userId={userId}
                     onLogout={this.logoutHandler}
+                    onError={this.setError}
                   />
                 )}
               />

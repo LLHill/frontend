@@ -23,6 +23,7 @@ const { Content, Footer } = Layout;
 const { Title } = Typography;
 export default class AdminLayout extends Component {
   render() {
+    const { token, onError } = this.props;
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <SideDrawer
@@ -51,7 +52,7 @@ export default class AdminLayout extends Component {
               <Route path={`/notices`} component={Notices} />
               <Route path={`/courses`} component={Courses} />
               <Route path={`/students`} component={Students} />
-              <Route path={`/subjects`} component={Subjects} />
+              <Route path={`/subjects`} render={() => <Subjects token={token} onError={onError} />} />
               <Route path={`/lecturers`} component={Lecturers} />
               <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
