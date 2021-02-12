@@ -38,22 +38,14 @@ export default class AdminLayout extends Component {
           onLogout={this.props.onLogout}
         />
         <Layout className="site-layout">
-          {/* <Header className="site-layout-background" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} >
-            <Badge count={5} style={{ margin: '0 1.5rem' }}>
-              <Avatar
-                size={{ xs: 10, sm: 14, md: 18, lg: 30, xl: 34, xxl: 36 }}
-                style={{ color: '#f56a00', backgroundColor: '#fde3cf', margin: '0 1.5rem' }}
-              >C</Avatar>
-            </Badge>
-          </Header> */}
           <Content style={{ margin: '0 16px' }}>
             <Switch>
-              <Route path={`/`} exact component={Dashboard} />
-              <Route path={`/notices`} component={Notices} />
-              <Route path={`/courses`} component={Courses} />
-              <Route path={`/students`} component={Students} />
+              <Route path={`/`} exact render={() => <Dashboard token={token} onError={onError} />} />
+              <Route path={`/notices`} render={() => <Notices token={token} onError={onError} />} />
+              <Route path={`/courses`} render={() => <Courses token={token} onError={onError} />} />
+              <Route path={`/students`} render={() => <Students token={token} onError={onError} />} />
               <Route path={`/subjects`} render={() => <Subjects token={token} onError={onError} />} />
-              <Route path={`/lecturers`} component={Lecturers} />
+              <Route path={`/lecturers`} render={() => <Lecturers token={token} onError={onError} />} />
               <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
           </Content>

@@ -16,7 +16,7 @@ export default class SideDrawer extends Component {
         key: PropTypes.number,
         text: PropTypes.string.isRequired,
         to: PropTypes.string,
-        icon: PropTypes.symbol
+        icon: PropTypes.object
       }).isRequired
     ).isRequired
   };
