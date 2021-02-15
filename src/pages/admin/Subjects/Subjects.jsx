@@ -73,7 +73,7 @@ export default class Subjects extends Component {
         if (res.status === 200)
           this.setSubjects(this.state.subjects.filter(subject => subject._id !== subjectId));
       })
-      .catch(err => console.log(err));
+      .catch(err => this.props.onError(err));
   }
 
   render() {

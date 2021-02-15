@@ -30,7 +30,7 @@ export default class Lecturers extends Component {
         return resData
       })
       .then(resData => this.setLecturers(resData.lecturers))
-      .catch(err => { throw new Error(err) });
+      .catch(err => this.props.onError(err));
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
@@ -55,25 +55,31 @@ export default class Lecturers extends Component {
           this.setLecturers([...this.state.lecturers, res.data.lecturer]);
         }
       })
-      .catch(err => { throw new Error(err) });
+      .catch(err => this.props.onError(err));
   }
 
   updatePasswordHandler = (lecturerId) => {
     const newPassword = Math.random().toString(36).slice(-8);
     console.log(newPassword)
-    //axios
+    axios.put('/admin/lecturer-password', {
+      lecturerId: lecturerId,
+      newPassword: newPassword
+    })
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => this.props.onError(err));
   }
 
   deleteLecturerHandler = (lecturerId) => {
     console.log(lecturerId)
-    axios.delete()
     axios.delete('/admin/lecturer/' + lecturerId)
       .then(res => {
         console.log(res)
         if (res.status === 200)
           this.setLecturers(this.state.lecturers.filter(lec => lec._id !== lecturerId));
       })
-      .catch(err => { throw new Error(err) });
+      .catch(err => this.props.onError(err));
   }
 
   render() {
