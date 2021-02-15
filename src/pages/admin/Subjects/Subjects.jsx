@@ -66,7 +66,6 @@ export default class Subjects extends Component {
 
   deleteSubjectHandler = (subjectId) => {
     console.log(subjectId)
-    axios.delete()
     axios.delete('/admin/subject/' + subjectId)
       .then(res => {
         console.log(res)
