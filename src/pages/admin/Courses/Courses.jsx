@@ -20,19 +20,21 @@ const tailLayout = {
 export default class Courses extends Component {
   state = {
     courses: [],
+    subjects: [],
+    lecturers: [],
     showForm: false,
     confirmLoading: false,
   }
 
   componentDidMount() {
     axios.get('/admin/courses')
-      .then(res => res.data)
-      .then(resData => {
-        console.log(resData)
-        return resData
-      })
-      .then(resData => this.setState(resData.courses))
-      .catch(err => console.log(err));
+      .then(res => this.setState({ 
+        courses: res.data.courses,
+        subjects: res.data.subjects,
+        lecturers: res.data.lecturers 
+      }))
+      .then(res => console.log(this.state))
+      .catch(err => this.props.onError(err));
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
@@ -72,8 +74,42 @@ export default class Courses extends Component {
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
-        <Column 
-          
+        <Column
+          title='Subject ID'
+          key='subjectId'
+          dataIndex='subjectId.id'
+        />
+        <Column
+          title='Subject Name'
+          key='subjectName'
+          dataIndex='subjectId.name'
+        />
+        <Column
+          title='Lecturer Name'
+          key='lecturerName'
+          dataIndex='lecturerId.name'
+        />
+        <Column
+          title='Class Type'
+          key='classType'
+          dataIndex='classType'
+        />
+        <Column
+          title='Room'
+          key='room'
+          dataIndex='room'
+        />
+        <Column
+          title='Weekday'
+          key='weekday'
+          dataIndex='weekday'
+        />
+        <Column
+          title='Periods'
+          key='periods'
+          render={(text, record) => (
+            <p>{record.periods[0] + '-' + record.periods[-1]}</p>
+          )}
         />
         <Column
           title='Action'

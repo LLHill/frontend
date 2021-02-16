@@ -94,6 +94,7 @@ class App extends Component {
 
   setError = (error) => {
     this.setState({ error });
+    console.log(error);
   }
 
   errorHandler = () => {

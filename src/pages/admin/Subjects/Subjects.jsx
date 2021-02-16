@@ -32,7 +32,7 @@ export default class Subjects extends Component {
         return resData
       })
       .then(resData => this.setSubjects(resData.subjects))
-      .catch(err => console.log(err));
+      .catch(err => this.props.onError(err));
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
