@@ -1,12 +1,15 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, InputNumber, Modal } from 'antd'
+// import { Link } from 'react-router-dom'
+import { Table, Space, Button, Form, Input, InputNumber, Select, Modal } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
 import axios from '../../../axios-instance'
+import { range } from '../../../util/array-functions'
 
 const { Column, ColumnGroup } = Table;
+const { Item } = Form;
+const { Option } = Select;
 
 const layout = {
   labelCol: { span: 8 },
@@ -22,16 +25,16 @@ export default class Courses extends Component {
     courses: [],
     subjects: [],
     lecturers: [],
-    showForm: false,
+    showForm: true,
     confirmLoading: false,
   }
 
   componentDidMount() {
     axios.get('/admin/courses')
-      .then(res => this.setState({ 
+      .then(res => this.setState({
         courses: res.data.courses,
         subjects: res.data.subjects,
-        lecturers: res.data.lecturers 
+        lecturers: res.data.lecturers
       }))
       .then(res => console.log(this.state))
       .catch(err => this.props.onError(err));
@@ -41,7 +44,15 @@ export default class Courses extends Component {
 
   createCourseHandler = (values) => {
     console.log(values)
-    axios.post('/admin/course', values, {
+    const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum } = values;
+    const start = parseInt(startPeriod)
+    const end = parseInt(startPeriod) + parseInt(periodNum) - 1 
+    console.log(start, end);
+    const periods = range(start, end);
+    console.log(periods)
+    axios.post('/admin/course', {
+      subjectId, lecturerId, classType, room, weekday, periods
+    }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
@@ -70,7 +81,7 @@ export default class Courses extends Component {
   }
 
   render() {
-    const { courses, showForm, confirmLoading } = this.state;
+    const { courses, subjects, lecturers, showForm, confirmLoading } = this.state;
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
@@ -137,10 +148,123 @@ export default class Courses extends Component {
           onFinish={this.createCourseHandler}
           onFinishFailed={null}
         >
-          <Form.Item>
-
-          </Form.Item>
-          <Form.Item {...tailLayout}>
+          <Item
+            label='Subject'
+            name='subjectId'
+            rules={[{
+              required: true,
+              message: 'Please select the subject at hand :D'
+            }]}
+          >
+            <Select
+              showSearch
+              placeholder='Select a subject'
+              optionFilterProp='children'
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {
+                subjects.map((subject, index) => (
+                  <Option key={index} value={subject._id}>
+                    {`${subject.id} - ${subject.name}`}
+                  </Option>
+                ))
+              }
+            </Select>
+          </Item>
+          <Item
+            label='Lecturer'
+            name='lecturerId'
+            rules={[{
+              required: true,
+              message: 'Please select the responsible lecturer :D'
+            }]}
+          >
+            <Select
+              showSearch
+              placeholder='Select the responsible lecturer'
+              optionFilterProp='children'
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {
+                lecturers.map(lecturer => (
+                  <Option value={lecturer._id}>
+                    {`${lecturer.name}`}
+                  </Option>
+                ))
+              }
+            </Select>
+          </Item>
+          <Item
+            label='Class Type'
+            name='classType'
+            rules={[{
+              required: true,
+              message: 'Please select the corresponding type of class :D'
+            }]}
+          >
+            <Select placeholder='Select the class type'>
+              <Option value={0}>Theory</Option>
+              <Option value={1}>Laboratory</Option>
+            </Select>
+          </Item>
+          <Item
+            label='Room'
+            name='room'
+            rules={[{
+              required: true,
+              message: 'Please input the room code :D'
+            }]}
+          >
+            <Input />
+          </Item>
+          <Item
+            label='Weekday'
+            name='weekday'
+            rules={[{
+              required: true,
+              message: 'Please select the weekday :D'
+            }]}
+          >
+            <Select placeholder='Select the weekday'>
+              <Option value={0}>Monday</Option>
+              <Option value={1}>Tuesday</Option>
+              <Option value={2}>Wednesday</Option>
+              <Option value={3}>Thursday</Option>
+              <Option value={4}>Friday</Option>
+              <Option value={5}>Saturday</Option>
+            </Select>
+          </Item>
+          <Item
+            label='Starting period'
+            name='startPeriod'
+            rules={[{
+              required: true,
+              message: 'Please input the starting period :D'
+            }, {
+              type: 'number',
+              message: 'Please input the starting period in number :D'
+            }]}
+          >
+            <InputNumber value={1} min={1} max={15} />
+          </Item>
+          <Item
+            label='Period number'
+            name='periodNum'
+            rules={[{
+              required: true,
+              message: 'Please input the number of periods :D'
+            }, {
+              type: 'number',
+              message: 'Please input the number of periods :D'
+            }]}
+          >
+            <InputNumber value={2} min={2} max={5} />
+          </Item>
+          <Item {...tailLayout}>
             <Button
               type='primary'
               htmlType='submit'
@@ -152,7 +276,7 @@ export default class Courses extends Component {
               type='link'
               onClick={this.toggleForm}
             >Cancel</Button>
-          </Form.Item>
+          </Item>
         </Form>
       </Modal>
     );

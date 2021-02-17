@@ -25,7 +25,11 @@ export default class Subjects extends Component {
   }
 
   componentDidMount() {
-    axios.get('/admin/subjects')
+    axios.get('/admin/subjects', {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => res.data)
       .then(resData => {
         console.log(resData)
@@ -66,7 +70,11 @@ export default class Subjects extends Component {
 
   deleteSubjectHandler = (subjectId) => {
     console.log(subjectId)
-    axios.delete('/admin/subject/' + subjectId)
+    axios.delete('/admin/subject/' + subjectId, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => {
         console.log(res)
         if (res.status === 200)

@@ -23,7 +23,11 @@ export default class Lecturers extends Component {
   }
 
   componentDidMount() {
-    axios.get('/admin/lecturers')
+    axios.get('/admin/lecturers', {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => res.data)
       .then(resData => {
         console.log(resData)
@@ -47,7 +51,11 @@ export default class Lecturers extends Component {
 
   createLecturerHandler = (values) => {
     console.log(values)
-    axios.post('/admin/create-lecturer', values)
+    axios.post('/admin/lecturer', values, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => {
         console.log(res)
         if (res.status === 201) {
@@ -64,6 +72,10 @@ export default class Lecturers extends Component {
     axios.put('/admin/lecturer-password', {
       lecturerId: lecturerId,
       newPassword: newPassword
+    }, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
     })
       .then(res => {
         console.log(res);
@@ -73,7 +85,11 @@ export default class Lecturers extends Component {
 
   deleteLecturerHandler = (lecturerId) => {
     console.log(lecturerId)
-    axios.delete('/admin/lecturer/' + lecturerId)
+    axios.delete('/admin/lecturer/' + lecturerId, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => {
         console.log(res)
         if (res.status === 200)
