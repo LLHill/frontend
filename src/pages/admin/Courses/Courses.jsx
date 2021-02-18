@@ -7,7 +7,7 @@ import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBread
 import axios from '../../../axios-instance'
 import { range } from '../../../util/array-functions'
 
-const { Column, ColumnGroup } = Table;
+const { Column } = Table;
 const { Item } = Form;
 const { Option } = Select;
 

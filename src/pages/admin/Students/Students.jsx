@@ -18,46 +18,47 @@ const tailLayout = {
 export default class Students extends Component {
   state = {
     students: [],
-    currentRFID: null,
+    currentRFID: 'ZE1334890',
     showForm: false,
     confirmLoading: false,
   }
 
   componentDidMount() {
-    // axios.get('/admin/students', {
-    //   headers: {
-    //     'Authorization': `Bearer ${this.props.token}`
-    //   }
-    // })
-    //   .then(res => res.data)
-    //   .then(resData => {
-    //     console.log(resData)
-    //     return resData
-    //   })
-    //   .then(resData => this.setState({ students: resData.students }))
-    //   .catch(err => this.props.onError(err));
+    axios.get('/admin/students', {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
+      .then(res => res.data)
+      .then(resData => {
+        console.log(resData)
+        return resData
+      })
+      .then(resData => this.setState({ students: resData.students }))
+      .catch(err => this.props.onError(err));
   }
 
   toggleForm = () => {
-    this.state.showForm ?
-      this.setState({ showForm: false }) :
-      axios.get('/admin/new-rfid', {
-        headers: {
-          'Authorization': `Bearer ${this.props.token}`
-        }
-      })
-        .then(res => this.setState({
-          showForm: !this.state.showForm,
-          currentRFID: res.data.rfidTag
-        }))
-        .catch(err => this.props.onError(err));
+    // this.state.showForm ?
+    //   this.setState({ showForm: false }) :
+    //   axios.get('/admin/new-rfid', {
+    //     headers: {
+    //       'Authorization': `Bearer ${this.props.token}`
+    //     }
+    //   })
+    //     .then(res => this.setState({
+    //       showForm: !this.state.showForm,
+    //       currentRFID: res.data.rfidTag
+    //     }))
+    //     .catch(err => this.props.onError(err));
+    this.setState({ showForm: !this.state.showForm })
   }
 
   setStudents = (studentData) => {
     this.setState({ students: studentData });
   }
 
-  createstudentHandler = (values) => {
+  createStudentHandler = (values) => {
     console.log(values)
     axios.post('/admin/student', values, {
       headers: {
@@ -68,7 +69,7 @@ export default class Students extends Component {
         console.log(res)
         if (res.status === 201) {
           this.setState({ showForm: false });
-          this.setstudents([...this.state.students, res.data.student]);
+          this.setStudents([...this.state.students, res.data.student]);
         }
       })
       .catch(err => this.props.onError(err));
@@ -111,19 +112,19 @@ export default class Students extends Component {
 
     const columns = [
       {
+        title: 'Student ID',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
         title: 'Name',
         dataIndex: 'name',
         key: 'name'
       },
       {
-        title: 'Email',
-        dataIndex: 'email',
-        key: 'email'
-      },
-      {
-        title: 'Course number',
-        dataIndex: 'courseNo',
-        key: 'courseNo'
+        title: 'RFID Tag',
+        dataIndex: 'rfidTag',
+        key: 'rfidTag'
       },
       {
         title: 'Action',
@@ -131,7 +132,6 @@ export default class Students extends Component {
         render: (text, record) => (
           <Space size='middle'>
             <Button type='primary'><Link to={`/courses?studentId=${record._id}`}>View courses</Link></Button>
-            <Button onClick={() => this.updatePasswordHandler(record._id)}>Update Password</Button>
             <Button onClick={() => this.deleteStudentHandler(record._id)} danger type='link'>Delete</Button>
           </Space>
         )
@@ -149,7 +149,7 @@ export default class Students extends Component {
         <Form
           {...layout}
           id={'studentForm'}
-          onFinish={this.createstudentHandler}
+          onFinish={this.createStudentHandler}
           onFinishFailed={null}
         >
           <Form.Item
@@ -171,6 +171,17 @@ export default class Students extends Component {
             }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            label="Student RFID Tag"
+            name="rfidTag"
+            rules={[{
+              required: true,
+              message: 'Please input a valid id!'
+            }]}
+            initialValue={this.state.currentRFID}
+          >
+            <Input readOnly />
           </Form.Item>
           {/* <Form.Item
             label="Password"
