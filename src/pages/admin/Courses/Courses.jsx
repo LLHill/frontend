@@ -43,13 +43,10 @@ export default class Courses extends Component {
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
 
   createCourseHandler = (values) => {
-    console.log(values)
     const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum } = values;
     const start = parseInt(startPeriod)
     const end = parseInt(startPeriod) + parseInt(periodNum) - 1 
-    console.log(start, end);
     const periods = range(start, end);
-    console.log(periods)
     axios.post('/admin/course', {
       subjectId, lecturerId, classType, room, weekday, periods
     }, {
