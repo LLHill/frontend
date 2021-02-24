@@ -1,10 +1,12 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
+import openSocket from 'socket.io-client'
 import { Table, Space, Button, Form, Input, Modal } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
 import axios from '../../../axios-instance'
+import serverUrl from '../../../util/serverUrl'
 
 const layout = {
   labelCol: { span: 8 },
@@ -39,6 +41,13 @@ export default class Students extends Component {
         currentRFID: resData.newRFID && resData.newRFID.rfidTag
       }))
       .catch(err => this.props.onError(err));
+    const socket = openSocket(serverUrl);
+    socket.on('new-rfid', data => {
+      console.log(data);
+      if (data.action === 'update')
+        this.setState({ currentRFID: data.rfidTag })
+      console.log(this.state.currentRFID)
+    });
   }
 
   toggleForm = () => {
@@ -111,7 +120,7 @@ export default class Students extends Component {
   }
 
   render() {
-    const { students, showForm, confirmLoading } = this.state;
+    const { students, showForm, confirmLoading, currentRFID } = this.state;
 
     const columns = [
       {
@@ -178,10 +187,15 @@ export default class Students extends Component {
           <Form.Item
             label="Student RFID Tag"
             name="rfidTag"
-
-            initialValue={this.state.currentRFID}
+            initialValue={currentRFID}
           >
-            <Input readOnly style={{ backgroundColor: 'ghostwhite' }} />
+            <p
+              style={{
+                padding: '5px',
+                border: '1px lightgray solid',
+                backgroundColor: 'ghostwhite'
+              }}
+            >{currentRFID}</p>
           </Form.Item>
           {/* <Form.Item
             label="Password"

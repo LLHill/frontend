@@ -1,7 +1,6 @@
-import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 // import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, InputNumber, Select, Modal } from 'antd'
+import { Table, Space, Button, Form, Input, InputNumber, Select, Modal, Typography } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
 import axios from '../../../axios-instance'
@@ -10,6 +9,7 @@ import { range } from '../../../util/array-functions'
 const { Column } = Table;
 const { Item } = Form;
 const { Option } = Select;
+const { Title } = Typography;
 
 const layout = {
   labelCol: { span: 8 },
