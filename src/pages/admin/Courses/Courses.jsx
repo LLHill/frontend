@@ -27,6 +27,8 @@ export default class Courses extends Component {
     lecturers: [],
     showForm: true,
     confirmLoading: false,
+    isUpdating: false,
+    updatingCourse: {}
   }
 
   componentDidMount() {
@@ -40,7 +42,16 @@ export default class Courses extends Component {
       .catch(err => this.props.onError(err));
   }
 
-  toggleForm = () => this.setState({ showForm: !this.state.showForm })
+  toggleCreate = () => this.setState({ 
+    showForm: !this.state.showForm,
+    isUpdating: false
+  })
+
+  toggleUpdate = (courseId) => this.setState(prevState => ({
+    showForm: !this.state.showForm,
+    isUpdating: true,
+    updatingCourseId: prevState.subjects.find(subject => subject._id === courseId)
+  }))
 
   createCourseHandler = (values) => {
     const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum } = values;
@@ -78,7 +89,7 @@ export default class Courses extends Component {
   }
 
   render() {
-    const { courses, subjects, lecturers, showForm, confirmLoading } = this.state;
+    const { courses, subjects, lecturers, showForm, confirmLoading, isUpdating, updatingCourse } = this.state;
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
@@ -124,6 +135,7 @@ export default class Courses extends Component {
           key='action'
           render={(text, record) => (
             <Space size='middle'>
+              <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
               <Button onClick={() => this.deleteCourseHandler(record._id)} danger type='link'>Delete</Button>
             </Space>
           )}
@@ -133,10 +145,10 @@ export default class Courses extends Component {
 
     const form = (
       <Modal
-        title={'Create New Course'}
+        title={isUpdating ? 'Update Course' : 'Create New Course'}
         visible={showForm}
         confirmLoading={confirmLoading}
-        onCancel={this.toggleForm}
+        onCancel={this.toggleCreate}
         footer={[]}
       >
         <Form
@@ -144,6 +156,7 @@ export default class Courses extends Component {
           id={'courseForm'}
           onFinish={this.createCourseHandler}
           onFinishFailed={null}
+          initialValues={isUpdating && updatingCourse}
         >
           <Item
             label='Subject'
@@ -271,7 +284,7 @@ export default class Courses extends Component {
               >Reset</Button> */}
             <Button
               type='link'
-              onClick={this.toggleForm}
+              onClick={this.toggleCreate}
             >Cancel</Button>
           </Item>
         </Form>
@@ -288,7 +301,7 @@ export default class Courses extends Component {
         />
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Title level={3}>Course List</Title>
-          <Button type='primary' onClick={this.toggleForm}>Add new course</Button>
+          <Button type='primary' onClick={this.toggleCreate}>Add new course</Button>
         </div>
         {table}
         {form}
