@@ -25,7 +25,7 @@ export default class Courses extends Component {
     courses: [],
     subjects: [],
     lecturers: [],
-    showForm: true,
+    showForm: false,
     confirmLoading: false,
     isUpdating: false,
     updatingCourse: {}

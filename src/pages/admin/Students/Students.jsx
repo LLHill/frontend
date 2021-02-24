@@ -18,7 +18,7 @@ const tailLayout = {
 export default class Students extends Component {
   state = {
     students: [],
-    currentRFID: 'ZE1334890',
+    currentRFID: '',
     showForm: false,
     confirmLoading: false,
   }
@@ -34,7 +34,10 @@ export default class Students extends Component {
         console.log(resData)
         return resData
       })
-      .then(resData => this.setState({ students: resData.students }))
+      .then(resData => this.setState({
+        students: resData.students,
+        currentRFID: resData.newRFID && resData.newRFID.rfidTag
+      }))
       .catch(err => this.props.onError(err));
   }
 
@@ -175,13 +178,10 @@ export default class Students extends Component {
           <Form.Item
             label="Student RFID Tag"
             name="rfidTag"
-            rules={[{
-              required: true,
-              message: 'Please input a valid id!'
-            }]}
+
             initialValue={this.state.currentRFID}
           >
-            <Input readOnly />
+            <Input readOnly style={{ backgroundColor: 'ghostwhite' }} />
           </Form.Item>
           {/* <Form.Item
             label="Password"
@@ -219,7 +219,7 @@ export default class Students extends Component {
           ]}
         />
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Title level={3}>student List</Title>
+          <Title level={3}>Student List</Title>
           <Button type='primary' onClick={this.toggleForm}>Add new student</Button>
         </div>
         <Table dataSource={students} columns={columns} rowKey='_id' />
