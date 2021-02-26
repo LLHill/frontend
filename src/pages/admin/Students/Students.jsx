@@ -72,7 +72,10 @@ export default class Students extends Component {
 
   createStudentHandler = (values) => {
     console.log(values)
-    axios.post('/admin/student', values, {
+    axios.post('/admin/student', {
+      ...values,
+      rfidTag: this.state.currentRFID
+    }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
@@ -169,6 +172,7 @@ export default class Students extends Component {
             name='name'
             rules={[{
               required: true,
+              min: 5,
               message: 'Please input the full name of student!'
             }]}
           >
@@ -179,7 +183,9 @@ export default class Students extends Component {
             name="id"
             rules={[{
               required: true,
-              message: 'Please input a valid id!'
+              min: 11,
+              max: 11,
+              message: 'Please input a valid student ID!',
             }]}
           >
             <Input />
@@ -195,7 +201,7 @@ export default class Students extends Component {
                 border: '1px lightgray solid',
                 backgroundColor: 'ghostwhite'
               }}
-            >{currentRFID}</p>
+            >{currentRFID ? currentRFID : "Not yet scanned"}</p>
           </Form.Item>
           {/* <Form.Item
             label="Password"

@@ -5,6 +5,7 @@ import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBread
 
 import axios from '../../../axios-instance'
 import { range } from '../../../util/array-functions'
+import { convertToWeekday } from '../../../util/weekday'
 
 const { Column } = Table;
 const { Item } = Form;
@@ -32,7 +33,11 @@ export default class Courses extends Component {
   }
 
   componentDidMount() {
-    axios.get('/admin/courses')
+    axios.get('/admin/courses', {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => this.setState({
         courses: res.data.courses,
         subjects: res.data.subjects,
@@ -42,21 +47,38 @@ export default class Courses extends Component {
       .catch(err => this.props.onError(err));
   }
 
-  toggleCreate = () => this.setState({ 
+  toggleCreate = () => this.setState({
     showForm: !this.state.showForm,
-    isUpdating: false
+    isUpdating: false,
+    updatingCourse: {}
   })
 
-  toggleUpdate = (courseId) => this.setState(prevState => ({
-    showForm: !this.state.showForm,
-    isUpdating: true,
-    updatingCourseId: prevState.subjects.find(subject => subject._id === courseId)
-  }))
+  toggleUpdate = (courseId) => {
+    axios.get(`/admin/course/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
+      .then(res => {
+        console.log(res.data)
+        return res.data.course
+      })
+      .then(course => this.setState({
+        showForm: !this.state.showForm,
+        isUpdating: true,
+        updatingCourse: {
+          ...course,
+          startPeriod: course.periods[0],
+          periodNum: course.periods.length
+        }
+      }))
+      .catch(err => this.props.onError(err));
+  }
 
   createCourseHandler = (values) => {
     const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum } = values;
     const start = parseInt(startPeriod)
-    const end = parseInt(startPeriod) + parseInt(periodNum) - 1 
+    const end = parseInt(startPeriod) + parseInt(periodNum) - 1
     const periods = range(start, end);
     axios.post('/admin/course', {
       subjectId, lecturerId, classType, room, weekday, periods
@@ -79,13 +101,27 @@ export default class Courses extends Component {
 
   deleteCourseHandler = (courseId) => {
     console.log(courseId)
-    axios.delete('/admin/course/' + courseId)
+    axios.delete(`/admin/course/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
       .then(res => {
         console.log(res)
         if (res.status === 200)
           this.setState({ courses: this.state.courses.filter(course => course._id !== courseId) });
       })
       .catch(err => this.props.onError(err));
+  }
+
+  getLecturer = (lecturerId) => {
+    const lec = this.state.lecturers.find(lec => lec._id === lecturerId);
+    return lec;
+  }
+
+  getSubject = (subjectId) => {
+    const subject = this.state.subjects.find(subject => subject._id === subjectId);
+    return subject;
   }
 
   render() {
@@ -96,22 +132,30 @@ export default class Courses extends Component {
         <Column
           title='Subject ID'
           key='subjectId'
-          dataIndex='subjectId.id'
+          render={(text, record) => (
+            this.getSubject(record.subjectId).id
+          )}
         />
         <Column
           title='Subject Name'
           key='subjectName'
-          dataIndex='subjectId.name'
+          render={(text, record) => (
+            this.getSubject(record.subjectId).name
+          )}
         />
         <Column
           title='Lecturer Name'
           key='lecturerName'
-          dataIndex='lecturerId.name'
+          render={(text, record) => (
+            this.getLecturer(record.lecturerId).name
+          )}
         />
         <Column
           title='Class Type'
           key='classType'
-          dataIndex='classType'
+          render={(text, record) => (
+            record.classType === "0" ? "Theory" : "Laboratory"
+          )}
         />
         <Column
           title='Room'
@@ -121,13 +165,13 @@ export default class Courses extends Component {
         <Column
           title='Weekday'
           key='weekday'
-          dataIndex='weekday'
+          render={(text, record) => convertToWeekday(record.weekday)}
         />
         <Column
           title='Periods'
           key='periods'
           render={(text, record) => (
-            <p>{record.periods[0] + '-' + record.periods[-1]}</p>
+            record.periods[0] + '-' + record.periods[record.periods.length - 1]
           )}
         />
         <Column
@@ -155,8 +199,8 @@ export default class Courses extends Component {
           {...layout}
           id={'courseForm'}
           onFinish={this.createCourseHandler}
-          onFinishFailed={null}
-          initialValues={isUpdating && updatingCourse}
+          // onFinishFailed={null}
+          initialValues={isUpdating ? updatingCourse : null}
         >
           <Item
             label='Subject'
@@ -216,7 +260,10 @@ export default class Courses extends Component {
               message: 'Please select the corresponding type of class :D'
             }]}
           >
-            <Select placeholder='Select the class type'>
+            <Select
+              placeholder='Select the class type'
+              // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
+            >
               <Option value={0}>Theory</Option>
               <Option value={1}>Laboratory</Option>
             </Select>
@@ -259,7 +306,7 @@ export default class Courses extends Component {
               message: 'Please input the starting period in number :D'
             }]}
           >
-            <InputNumber value={1} min={1} max={15} />
+            <InputNumber min={1} max={15} />
           </Item>
           <Item
             label='Period number'
@@ -272,7 +319,7 @@ export default class Courses extends Component {
               message: 'Please input the number of periods :D'
             }]}
           >
-            <InputNumber value={2} min={2} max={5} />
+            <InputNumber min={2} max={5} />
           </Item>
           <Item {...tailLayout}>
             <Button
