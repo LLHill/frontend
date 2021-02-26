@@ -246,7 +246,7 @@ export default class Courses extends Component {
               {
                 lecturers.map(lecturer => (
                   <Option value={lecturer._id}>
-                    {`${lecturer.name}`}
+                    {lecturer.name}
                   </Option>
                 ))
               }
@@ -262,10 +262,10 @@ export default class Courses extends Component {
           >
             <Select
               placeholder='Select the class type'
-              // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
+            // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
             >
-              <Option value={0}>Theory</Option>
-              <Option value={1}>Laboratory</Option>
+              <Option value={"0"}>Theory</Option>
+              <Option value={"1"}>Laboratory</Option>
             </Select>
           </Item>
           <Item
@@ -286,13 +286,17 @@ export default class Courses extends Component {
               message: 'Please select the weekday :D'
             }]}
           >
-            <Select placeholder='Select the weekday'>
-              <Option value={0}>Monday</Option>
-              <Option value={1}>Tuesday</Option>
-              <Option value={2}>Wednesday</Option>
-              <Option value={3}>Thursday</Option>
-              <Option value={4}>Friday</Option>
-              <Option value={5}>Saturday</Option>
+            <Select
+              placeholder='Select the weekday'
+              // labelInValue
+              // defaultValue={{ value: isUpdating ? updatingCourse.weekday : 0 }}
+            >
+              <Option value={"0"}>Monday</Option>
+              <Option value={"1"}>Tuesday</Option>
+              <Option value={"2"}>Wednesday</Option>
+              <Option value={"3"}>Thursday</Option>
+              <Option value={"4"}>Friday</Option>
+              <Option value={"5"}>Saturday</Option>
             </Select>
           </Item>
           <Item

@@ -50,25 +50,9 @@ export default class Students extends Component {
     });
   }
 
-  toggleForm = () => {
-    // this.state.showForm ?
-    //   this.setState({ showForm: false }) :
-    //   axios.get('/admin/new-rfid', {
-    //     headers: {
-    //       'Authorization': `Bearer ${this.props.token}`
-    //     }
-    //   })
-    //     .then(res => this.setState({
-    //       showForm: !this.state.showForm,
-    //       currentRFID: res.data.rfidTag
-    //     }))
-    //     .catch(err => this.props.onError(err));
-    this.setState({ showForm: !this.state.showForm })
-  }
+  toggleForm = () => this.setState({ showForm: !this.state.showForm })
 
-  setStudents = (studentData) => {
-    this.setState({ students: studentData });
-  }
+  setStudents = (studentData) => this.setState({ students: studentData })
 
   createStudentHandler = (values) => {
     console.log(values)
@@ -203,16 +187,6 @@ export default class Students extends Component {
               }}
             >{currentRFID ? currentRFID : "Not yet scanned"}</p>
           </Form.Item>
-          {/* <Form.Item
-            label="Password"
-            name="password"
-            rules={[{
-              required: true,
-              message: 'Please input random password!'
-            }]}
-          >
-            <Input.Password />
-          </Form.Item> */}
           <Form.Item {...tailLayout}>
             <Button
               type='primary'
