@@ -26,6 +26,7 @@ export default class Courses extends Component {
     courses: [],
     subjects: [],
     lecturers: [],
+    students: [],
     showForm: false,
     confirmLoading: false,
     isUpdating: false,
@@ -41,7 +42,8 @@ export default class Courses extends Component {
       .then(res => this.setState({
         courses: res.data.courses,
         subjects: res.data.subjects,
-        lecturers: res.data.lecturers
+        lecturers: res.data.lecturers,
+        students: res.data.students
       }))
       .then(res => console.log(this.state))
       .catch(err => this.props.onError(err));
@@ -76,7 +78,7 @@ export default class Courses extends Component {
   }
 
   createCourseHandler = (values) => {
-    const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum } = values;
+    const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum, regStudentIds } = values;
     const start = parseInt(startPeriod)
     const end = parseInt(startPeriod) + parseInt(periodNum) - 1
     const periods = range(start, end);
@@ -88,8 +90,8 @@ export default class Courses extends Component {
       }
     })
       .then(res => {
-        console.log(res)
         if (res.status === 201) {
+          this.updateRegistrationsHandler(res.data.course._id, regStudentIds);
           this.setState({
             showForm: false,
             courses: [...this.state.courses, res.data.course]
@@ -97,7 +99,20 @@ export default class Courses extends Component {
         }
       })
       .catch(err => this.props.onError(err));
-  }
+  };
+
+  updateRegistrationsHandler = (courseId, regStudentIds) => {
+    axios.put('/admin/registrations', { courseId, regStudentIds }, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
+      .then(res => {
+        console.log(res.data)
+        return res.data
+      })
+      .catch(err => this.props.onError(err));
+  };
 
   deleteCourseHandler = (courseId) => {
     console.log(courseId)
@@ -125,7 +140,7 @@ export default class Courses extends Component {
   }
 
   render() {
-    const { courses, subjects, lecturers, showForm, confirmLoading, isUpdating, updatingCourse } = this.state;
+    const { courses, subjects, lecturers, students, showForm, confirmLoading, isUpdating, updatingCourse } = this.state;
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
@@ -286,11 +301,7 @@ export default class Courses extends Component {
               message: 'Please select the weekday :D'
             }]}
           >
-            <Select
-              placeholder='Select the weekday'
-              // labelInValue
-              // defaultValue={{ value: isUpdating ? updatingCourse.weekday : 0 }}
-            >
+            <Select placeholder='Select the weekday'>
               <Option value={"0"}>Monday</Option>
               <Option value={"1"}>Tuesday</Option>
               <Option value={"2"}>Wednesday</Option>
@@ -324,6 +335,24 @@ export default class Courses extends Component {
             }]}
           >
             <InputNumber min={2} max={5} />
+          </Item>
+          <Item
+            label='Registered students'
+            name='regStudentIds'
+          >
+            <Select
+              mode='multiple'
+              allowClear={!isUpdating}
+              defaultValue={isUpdating ? updatingCourse.regStudentIds : []}
+            >
+              {
+                students.map(student => (
+                  <Option value={student._id}>
+                    {`${student.id} - ${student.name}`}
+                  </Option>
+                ))
+              }
+            </Select>
           </Item>
           <Item {...tailLayout}>
             <Button

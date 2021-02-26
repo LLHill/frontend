@@ -120,32 +120,27 @@ class App extends Component {
 
     if (isAuth)
       routes = (
-        <Switch>
-          {
-            isAdmin ?
-              <Route path='/'
-                render={() => (
-                  <AdminLayout
-                    token={token}
-                    userId={userId}
-                    onLogout={this.logoutHandler}
-                    onError={this.setError}
-                  />
-                )}
-              /> :
-              <Route path='/'
-                render={() => (
-                  <LecturerLayout
-                    token={token}
-                    userId={userId}
-                    onLogout={this.logoutHandler}
-                    onError={this.setError}
-                  />
-                )}
+        isAdmin ?
+          <Route path='/'
+            render={() => (
+              <AdminLayout
+                token={token}
+                userId={userId}
+                onLogout={this.logoutHandler}
+                onError={this.setError}
               />
-          }
-          <Redirect to='/' />
-        </Switch>
+            )}
+          /> :
+          <Route path='/'
+            render={() => (
+              <LecturerLayout
+                token={token}
+                userId={userId}
+                onLogout={this.logoutHandler}
+                onError={this.setError}
+              />
+            )}
+          />
       );
     return (
       <Fragment>
