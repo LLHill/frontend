@@ -39,7 +39,7 @@ class App extends Component {
   loginHandler = (values) => {
     const { isAdminLogin, email, password } = values;
     console.log(values);
-    let path = '/login';
+    let path = '/lecturer/login';
     if (isAdminLogin)
       path = '/admin/login';
 

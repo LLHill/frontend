@@ -5,8 +5,7 @@ import { Layout, Typography } from 'antd';
 import {
   DesktopOutlined,
   ReadOutlined,
-  PieChartOutlined,
-  KeyOutlined
+  PieChartOutlined
 } from '@ant-design/icons';
 
 import SideDrawer from '../../components/Navigation/SideDrawer/SideDrawer';
@@ -28,7 +27,9 @@ export default class LecturerLayout extends Component {
             { key: 1, text: 'Dashboard', to: '/', icon: <DesktopOutlined /> },
             { key: 2, text: 'Courses', to: '/courses', icon: <ReadOutlined /> },
             { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> },
-            { key: 4, text: 'Admin (for dev)', to: '/admin', icon: <KeyOutlined /> },
+            { key: 4 },
+            { key: 6 },
+            { key: 5 }
           ]}
         />
         <Layout className="site-layout">

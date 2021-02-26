@@ -36,6 +36,7 @@ export default class AdminLayout extends Component {
             { key: 6, text: 'Notices', to: `/notices`, icon: <NotificationOutlined /> },
           ]}
           onLogout={this.props.onLogout}
+          dividerHeight='15rem'
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>

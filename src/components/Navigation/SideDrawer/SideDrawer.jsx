@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import logo from '../../../assets/images/hcmiulogo.png'
 import { Layout, Menu, Image, Typography, Switch } from 'antd';
-import { PoweroffOutlined, BulbOutlined } from '@ant-design/icons';
+import { PoweroffOutlined, BulbOutlined, KeyOutlined } from '@ant-design/icons';
 
 const { Sider } = Layout;
 const { Title } = Typography;
@@ -39,7 +39,7 @@ export default class SideDrawer extends Component {
 
   render() {
     const { collapsed, theme } = this.state;
-    const { elements, onLogout } = this.props;
+    const { elements, onLogout, onToggleChangePassword } = this.props;
     return (
       <Sider theme={theme} collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
         {
@@ -58,7 +58,7 @@ export default class SideDrawer extends Component {
               </Menu.Item>
             ))
           }
-          <Menu.Divider style={{backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height:'18rem'}} />
+          <Menu.Divider style={{ backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height: "15rem" }} />
           <Menu.Item key={'darkmode'} icon={<BulbOutlined />}>
             Dark Mode
             <Switch
@@ -66,6 +66,9 @@ export default class SideDrawer extends Component {
               onChange={this.changeTheme}
               style={{ marginLeft: '1rem' }}
             />
+          </Menu.Item>
+          <Menu.Item key={'changepass'} icon={<KeyOutlined />} onClick={onToggleChangePassword}>
+            Change Password
           </Menu.Item>
           <Menu.Item key={'logout'} icon={<PoweroffOutlined />} danger onClick={onLogout}>
             Logout
