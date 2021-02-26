@@ -40,6 +40,7 @@ export default class SideDrawer extends Component {
   render() {
     const { collapsed, theme } = this.state;
     const { elements, onLogout, onToggleChangePassword } = this.props;
+
     return (
       <Sider theme={theme} collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
         {

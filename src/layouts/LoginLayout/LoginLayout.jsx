@@ -44,8 +44,7 @@ export default class LoginLayout extends Component {
           </div>
           <div>
             <Form
-              name="basic"
-              initialValues={{ remember: true }}
+              name="login"
               onFinish={(values) => onLogin(values)}
               onFinishFailed={this.onFinishFailed}
             >
