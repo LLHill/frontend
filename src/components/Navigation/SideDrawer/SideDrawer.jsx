@@ -59,7 +59,7 @@ export default class SideDrawer extends Component {
               </Menu.Item>
             ))
           }
-          <Menu.Divider style={{ backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height: "15rem" }} />
+          <Menu.Divider style={{ backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height: "40vh" }} />
           <Menu.Item key={'darkmode'} icon={<BulbOutlined />}>
             Dark Mode
             <Switch

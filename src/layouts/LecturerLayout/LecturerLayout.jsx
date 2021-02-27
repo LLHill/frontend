@@ -26,10 +26,7 @@ export default class LecturerLayout extends Component {
           elements={[
             { key: 1, text: 'Dashboard', to: '/', icon: <DesktopOutlined /> },
             { key: 2, text: 'Courses', to: '/courses', icon: <ReadOutlined /> },
-            { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> },
-            { key: 4 },
-            { key: 6 },
-            { key: 5 }
+            { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> }
           ]}
         />
         <Layout className="site-layout">

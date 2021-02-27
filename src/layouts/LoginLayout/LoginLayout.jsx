@@ -7,14 +7,6 @@ import logo from '../../assets/images/hcmiulogo.png'
 
 const { Title } = Typography;
 
-// const layout = {
-//   labelCol: { span: 8 },
-//   wrapperCol: { span: 16 },
-// };
-// const tailLayout = {
-//   wrapperCol: { offset: 8, span: 16 },
-// };
-
 export default class LoginLayout extends Component {
   onFinishFailed = (errorInfo) => {
     console.log('Failed:', errorInfo);

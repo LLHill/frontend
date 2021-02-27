@@ -22,14 +22,16 @@ class App extends Component {
   componentDidMount() {
     const token = localStorage.getItem('token');
     const expiryDate = localStorage.getItem('expiryDate');
-    const isAdmin = localStorage.getItem('isAdmin');
+    const isAdminString = localStorage.getItem('isAdmin');
 
-    if (!token || !expiryDate || !isAdmin)
+    if (!token || !expiryDate || !isAdminString)
       return;
     if (new Date(expiryDate) <= new Date()) {
       this.logoutHandler();
       return;
     }
+
+    const isAdmin = isAdminString === 'false' ? false : true;
     const userId = localStorage.getItem('userId');
     const remainingMilliseconds = new Date(expiryDate).getTime() - new Date().getTime();
     this.setState({ isAuth: true, token, userId, isAdmin });
