@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
-import { Table, Space, Button } from 'antd'
-
+import { Table, Space, Button, Input } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
+import Highlighter from 'react-highlight-words'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 import axios from '../../../axios-instance'
 import { convertToWeekday } from '../../../util/weekday'
@@ -11,7 +12,9 @@ export default class Courses extends Component {
   state = {
     courses: [],
     subjects: [],
-    students: []
+    students: [],
+    searchText: '',
+    searchedColumn: ''
   }
 
   componentDidMount() {
@@ -36,6 +39,87 @@ export default class Courses extends Component {
 
   getStudent = (studentId) => this.state.students.find(student => student._id === studentId);
 
+  // Search
+  // _______
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({ closeDropdown: false });
+              this.setState({
+                searchText: selectedKeys[0],
+                searchedColumn: dataIndex,
+              });
+            }}
+          >
+            Filter
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
+    },
+    render: text =>
+      this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+          text
+        ),
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
+
+  handleReset = clearFilters => {
+    clearFilters();
+    this.setState({ searchText: '' });
+  };
+  // _______
+
   render() {
     const { courses, subjects, students } = this.state;
 
@@ -54,6 +138,7 @@ export default class Courses extends Component {
           render={(text, record) => (
             this.getSubject(record.subjectId).name
           )}
+          // {...this.getColumnSearchProps('classType')}
         />
         <Column
           title='Class Type'
@@ -61,6 +146,18 @@ export default class Courses extends Component {
           render={(text, record) => (
             record.classType === "0" ? "Theory" : "Laboratory"
           )}
+          filters={[
+            {
+              text: 'Theory',
+              value: '0'
+            },
+            {
+              text: 'Laboratory',
+              value: '1'
+            }
+          ]}
+          filterMultiple={false}
+          onFilter={(value, record) => record.classType.indexOf(value) === 0}
         />
         <Column
           title='Room'
@@ -71,6 +168,8 @@ export default class Courses extends Component {
           title='Weekday'
           key='weekday'
           render={(text, record) => convertToWeekday(record.weekday)}
+          defaultSortOrder='ascend'
+          sorter={(a, b) => a.weekday - b.weekday}
         />
         <Column
           title='Periods'
@@ -78,8 +177,10 @@ export default class Courses extends Component {
           render={(text, record) => (
             record.periods[0] + '-' + record.periods[record.periods.length - 1]
           )}
+          defaultSortOrder='ascend'
+          sorter={(a, b) => a.periods[0] - b.periods[0]}
         />
-        <Column 
+        <Column
           title='Student Number'
           key='studentNum'
           render={(text, record) => (
