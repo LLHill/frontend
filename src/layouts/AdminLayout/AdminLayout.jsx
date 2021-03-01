@@ -4,7 +4,7 @@ import { Switch, Route } from "react-router-dom";
 import { Layout, Typography } from 'antd';
 import {
   DesktopOutlined,
-  NotificationOutlined,
+  UpSquareOutlined,
   BookOutlined,
   ReadOutlined,
   UserOutlined,
@@ -16,7 +16,7 @@ import Dashboard from '../../pages/admin/Dashboard/Dashboard';
 import Courses from '../../pages/admin/Courses/Courses';
 import Subjects from '../../pages/admin/Subjects/Subjects';
 import Students from '../../pages/admin/Students/Students';
-import Notices from '../../pages/admin/Notices/Notices';
+import Rooms from '../../pages/admin/Rooms/Rooms';
 import Lecturers from '../../pages/admin/Lecturers/Lecturers';
 
 const { Content, Footer } = Layout;
@@ -33,16 +33,16 @@ export default class AdminLayout extends Component {
             { key: 3, text: 'Subjects', to: `/subjects`, icon: <BookOutlined /> },
             { key: 4, text: 'Courses', to: `/courses`, icon: <ReadOutlined /> },
             { key: 5, text: 'Students', to: `/students`, icon: <TeamOutlined /> },
-            { key: 6, text: 'Notices', to: `/notices`, icon: <NotificationOutlined /> },
+            { key: 6, text: 'Room', to: `/rooms`, icon: <UpSquareOutlined /> },
           ]}
           onLogout={this.props.onLogout}
-          dividerHeight='40vh'
+          dividerHeight='30vh'
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>
             <Switch>
               <Route path={`/`} exact render={() => <Dashboard token={token} onError={onError} />} />
-              <Route path={`/notices`} render={() => <Notices token={token} onError={onError} />} />
+              <Route path={`/rooms`} render={() => <Rooms token={token} onError={onError} />} />
               <Route path={`/courses`} render={() => <Courses token={token} onError={onError} />} />
               <Route path={`/students`} render={() => <Students token={token} onError={onError} />} />
               <Route path={`/subjects`} render={() => <Subjects token={token} onError={onError} />} />

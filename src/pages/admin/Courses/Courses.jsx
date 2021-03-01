@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react'
 // import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, InputNumber, Select, Modal, Typography } from 'antd'
+import { Table, Space, Button, Form, InputNumber, Select, Modal, Typography } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
 import axios from '../../../axios-instance'
@@ -27,6 +27,7 @@ export default class Courses extends Component {
     subjects: [],
     lecturers: [],
     students: [],
+    rooms: [],
     showForm: false,
     confirmLoading: false,
     isUpdating: false,
@@ -43,7 +44,8 @@ export default class Courses extends Component {
         courses: res.data.courses,
         subjects: res.data.subjects,
         lecturers: res.data.lecturers,
-        students: res.data.students
+        students: res.data.students,
+        rooms: res.data.rooms
       }))
       .then(res => console.log(this.state))
       .catch(err => this.props.onError(err));
@@ -78,12 +80,13 @@ export default class Courses extends Component {
   }
 
   createCourseHandler = (values) => {
-    const { subjectId, lecturerId, classType, room, weekday, startPeriod, periodNum, regStudentIds } = values;
+    console.log(values);
+    const { subjectId, lecturerId, classType, roomId, weekday, startPeriod, periodNum, regStudentIds } = values;
     const start = parseInt(startPeriod)
     const end = parseInt(startPeriod) + parseInt(periodNum) - 1
     const periods = range(start, end);
     axios.post('/admin/course', {
-      subjectId, lecturerId, classType, room, weekday, periods
+      subjectId, lecturerId, classType, roomId, weekday, periods
     }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -91,7 +94,8 @@ export default class Courses extends Component {
     })
       .then(res => {
         if (res.status === 201) {
-          this.updateRegistrationsHandler(res.data.course._id, regStudentIds);
+          if (Array.isArray(regStudentIds) && regStudentIds.length !== 0)
+            this.updateRegistrationsHandler(res.data.course._id, regStudentIds);
           this.setState({
             showForm: false,
             courses: [...this.state.courses, res.data.course]
@@ -139,8 +143,10 @@ export default class Courses extends Component {
     return subject;
   }
 
+  getRoom = roomId => this.state.rooms.find(room => room._id === roomId);
+
   render() {
-    const { courses, subjects, lecturers, students, showForm, confirmLoading, isUpdating, updatingCourse } = this.state;
+    const { courses, subjects, lecturers, students, rooms, showForm, confirmLoading, isUpdating, updatingCourse } = this.state;
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
@@ -175,7 +181,9 @@ export default class Courses extends Component {
         <Column
           title='Room'
           key='room'
-          dataIndex='room'
+          render={(text, record) => (
+            this.getRoom(record.roomId).code
+          )}
         />
         <Column
           title='Weekday'
@@ -285,13 +293,28 @@ export default class Courses extends Component {
           </Item>
           <Item
             label='Room'
-            name='room'
+            name='roomId'
             rules={[{
               required: true,
-              message: 'Please input the room code :D'
+              message: 'Please select the room code :D'
             }]}
           >
-            <Input />
+            <Select
+              showSearch
+              placeholder='Select a room'
+              optionFilterProp='children'
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {
+                rooms.map((room, index) => (
+                  <Option key={index} value={room._id}>
+                    {`${room.code}`}
+                  </Option>
+                ))
+              }
+            </Select>
           </Item>
           <Item
             label='Weekday'
