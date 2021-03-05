@@ -2,11 +2,15 @@ import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import openSocket from 'socket.io-client'
-import { Table, Space, Button, Form, Input, Modal } from 'antd'
+import { Table, Space, Button, Form, Input, Select, Modal } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
+import AntForm from '../../../components/AntForm/AntForm'
 
 import axios from '../../../axios-instance'
 import serverUrl from '../../../util/serverUrl'
+
+const { Item } = Form;
+const { Option } = Select;
 
 const layout = {
   labelCol: { span: 8 },
@@ -21,6 +25,7 @@ export default class Students extends Component {
   state = {
     students: [],
     currentRFID: '',
+    RFIDs: [],
     showForm: false,
     confirmLoading: false,
   }
@@ -38,7 +43,8 @@ export default class Students extends Component {
       })
       .then(resData => this.setState({
         students: resData.students,
-        currentRFID: resData.newRFID && resData.newRFID.rfidTag
+        currentRFID: resData.newRFID && resData.newRFID.rfidTag,
+        RFIDs: resData.RFIDs
       }))
       .catch(err => this.props.onError(err));
     const socket = openSocket(serverUrl);
@@ -58,7 +64,7 @@ export default class Students extends Component {
     console.log(values)
     axios.post('/admin/student', {
       ...values,
-      rfidTag: this.state.currentRFID
+      // rfidTag: this.state.currentRFID
     }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -67,29 +73,15 @@ export default class Students extends Component {
       .then(res => {
         console.log(res)
         if (res.status === 201) {
-          this.setState({ showForm: false });
+          this.setState({
+            showForm: false,
+            RFIDs: this.state.RFIDs.filter(rfid => rfid.rfidTag !== values.rfidTag)
+          });
           this.setStudents([...this.state.students, res.data.student]);
         }
       })
       .catch(err => this.props.onError(err));
   }
-
-  // updatePasswordHandler = (studentId) => {
-  //   const newPassword = Math.random().toString(36).slice(-8);
-  //   console.log(newPassword)
-  //   axios.put('/admin/student-password', {
-  //     studentId: studentId,
-  //     newPassword: newPassword
-  //   }, {
-  //     headers: {
-  //       'Authorization': `Bearer ${this.props.token}`
-  //     }
-  //   })
-  //     .then(res => {
-  //       console.log(res);
-  //     })
-  //     .catch(err => this.props.onError(err));
-  // }
 
   deleteStudentHandler = (studentId) => {
     console.log(studentId)
@@ -107,7 +99,7 @@ export default class Students extends Component {
   }
 
   render() {
-    const { students, showForm, confirmLoading, currentRFID } = this.state;
+    const { students, showForm, confirmLoading, /*currentRFID*/ RFIDs } = this.state;
 
     const columns = [
       {
@@ -145,13 +137,15 @@ export default class Students extends Component {
         onCancel={this.toggleForm}
         footer={[]}
       >
-        <Form
-          {...layout}
+        <AntForm
+          layout={{ ...layout }}
+          tailLayout={{...tailLayout}}
           id={'studentForm'}
           onFinish={this.createStudentHandler}
           onFinishFailed={null}
+          onCancel={this.toggleForm}
         >
-          <Form.Item
+          <Item
             label='Full name'
             name='name'
             rules={[{
@@ -161,8 +155,8 @@ export default class Students extends Component {
             }]}
           >
             <Input />
-          </Form.Item>
-          <Form.Item
+          </Item>
+          <Item
             label="Student ID"
             name="id"
             rules={[{
@@ -173,8 +167,8 @@ export default class Students extends Component {
             }]}
           >
             <Input />
-          </Form.Item>
-          <Form.Item
+          </Item>
+          {/* <Form.Item
             label="Student RFID Tag"
             name="rfidTag"
             initialValue={currentRFID}
@@ -186,21 +180,33 @@ export default class Students extends Component {
                 backgroundColor: 'ghostwhite'
               }}
             >{currentRFID ? currentRFID : "Not yet scanned"}</p>
-          </Form.Item>
-          <Form.Item {...tailLayout}>
-            <Button
-              type='primary'
-              htmlType='submit'
-            >Submit</Button>
-            {/* <Button
-                htmlType='reset'
-              >Reset</Button> */}
-            <Button
-              type='link'
-              onClick={this.toggleForm}
-            >Cancel</Button>
-          </Form.Item>
-        </Form>
+          </Form.Item> */}
+          <Item
+            label='Student RFID Tag'
+            name='rfidTag'
+            rules={[{
+              required: true,
+              message: 'Please select the tag number :D'
+            }]}
+          >
+            <Select
+              showSearch
+              placeholder='Select a tag number'
+              optionFilterProp='children'
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {
+                RFIDs.map((rfid, index) => (
+                  <Option key={index} value={rfid.rfidTag}>
+                    {`${rfid.id} - ${rfid.rfidTag}`}
+                  </Option>
+                ))
+              }
+            </Select>
+          </Item>
+        </AntForm>
       </Modal>
     );
 

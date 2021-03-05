@@ -121,7 +121,7 @@ export default class Courses extends Component {
   // _______
 
   render() {
-    const { courses, subjects, students } = this.state;
+    const { courses/*, subjects, students*/ } = this.state;
 
     const table = (
       <Table dataSource={courses} rowKey='_id'>
