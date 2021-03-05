@@ -287,8 +287,8 @@ export default class Courses extends Component {
               placeholder='Select the class type'
             // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
             >
-              <Option value={"0"}>Theory</Option>
-              <Option value={"1"}>Laboratory</Option>
+              <Option key={"0"} value={"0"}>Theory</Option>
+              <Option key={"1"} value={"1"}>Laboratory</Option>
             </Select>
           </Item>
           <Item
@@ -325,12 +325,12 @@ export default class Courses extends Component {
             }]}
           >
             <Select placeholder='Select the weekday'>
-              <Option value={"0"}>Monday</Option>
-              <Option value={"1"}>Tuesday</Option>
-              <Option value={"2"}>Wednesday</Option>
-              <Option value={"3"}>Thursday</Option>
-              <Option value={"4"}>Friday</Option>
-              <Option value={"5"}>Saturday</Option>
+              <Option key={"0"} value={"0"}>Monday</Option>
+              <Option key={"1"}  value={"1"}>Tuesday</Option>
+              <Option key={"2"}  value={"2"}>Wednesday</Option>
+              <Option key={"3"}  value={"3"}>Thursday</Option>
+              <Option key={"4"}  value={"4"}>Friday</Option>
+              <Option key={"5"}  value={"5"}>Saturday</Option>
             </Select>
           </Item>
           <Item
