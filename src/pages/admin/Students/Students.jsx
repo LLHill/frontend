@@ -1,6 +1,6 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
+// import { Link } from 'react-router-dom'
 import openSocket from 'socket.io-client'
 import { Table, Space, Button, Form, Input, Select, Modal } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
@@ -122,7 +122,7 @@ export default class Students extends Component {
         key: 'action',
         render: (text, record) => (
           <Space size='middle'>
-            <Button type='primary'><Link to={`/courses?studentId=${record._id}`}>View courses</Link></Button>
+            {/* <Button type='primary'><Link to={`/courses?studentId=${record._id}`}>View courses</Link></Button> */}
             <Button onClick={() => this.deleteStudentHandler(record._id)} danger type='link'>Delete</Button>
           </Space>
         )

@@ -81,7 +81,7 @@ export default class Courses extends Component {
 
   createCourseHandler = (values) => {
     console.log(values);
-    const { subjectId, lecturerId, classType, roomId, weekday, startPeriod, periodNum, regStudentIds } = values;
+    const { subjectId, lecturerId, classType, roomId, weekday, startPeriod, periodNum } = values;
     const start = parseInt(startPeriod)
     const end = parseInt(startPeriod) + parseInt(periodNum) - 1
     const periods = range(start, end);
@@ -94,8 +94,6 @@ export default class Courses extends Component {
     })
       .then(res => {
         if (res.status === 201) {
-          if (Array.isArray(regStudentIds) && regStudentIds.length !== 0)
-            this.updateRegistrationsHandler(res.data.course._id, regStudentIds);
           this.setState({
             showForm: false,
             courses: [...this.state.courses, res.data.course]
@@ -105,8 +103,11 @@ export default class Courses extends Component {
       .catch(err => this.props.onError(err));
   };
 
-  updateRegistrationsHandler = (courseId, regStudentIds) => {
-    axios.put('/admin/registrations', { courseId, regStudentIds }, {
+  updateRegistrationsHandler = (values) => {
+    axios.put('/admin/registrations', {
+      ...values,
+      courseId: this.state.updatingCourse._id
+    }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
@@ -202,7 +203,7 @@ export default class Courses extends Component {
           key='action'
           render={(text, record) => (
             <Space size='middle'>
-              <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
+              <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update Registrations</Button>
               <Button onClick={() => this.deleteCourseHandler(record._id)} danger type='link'>Delete</Button>
             </Space>
           )}
@@ -210,9 +211,169 @@ export default class Courses extends Component {
       </Table>
     );
 
+    const createFormItems = (
+      <Fragment>
+        <Item
+          label='Subject'
+          name='subjectId'
+          rules={[{
+            required: true,
+            message: 'Please select the subject at hand :D'
+          }]}
+        >
+          <Select
+            showSearch
+            placeholder='Select a subject'
+            optionFilterProp='children'
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {
+              subjects.map((subject, index) => (
+                <Option key={index} value={subject._id}>
+                  {`${subject.id} - ${subject.name}`}
+                </Option>
+              ))
+            }
+          </Select>
+        </Item>
+        <Item
+          label='Lecturer'
+          name='lecturerId'
+          rules={[{
+            required: true,
+            message: 'Please select the responsible lecturer :D'
+          }]}
+        >
+          <Select
+            showSearch
+            placeholder='Select the responsible lecturer'
+            optionFilterProp='children'
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {
+              lecturers.map(lecturer => (
+                <Option value={lecturer._id}>
+                  {lecturer.name}
+                </Option>
+              ))
+            }
+          </Select>
+        </Item>
+        <Item
+          label='Class Type'
+          name='classType'
+          rules={[{
+            required: true,
+            message: 'Please select the corresponding type of class :D'
+          }]}
+        >
+          <Select
+            placeholder='Select the class type'
+          // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
+          >
+            <Option key={"0"} value={"0"}>Theory</Option>
+            <Option key={"1"} value={"1"}>Laboratory</Option>
+          </Select>
+        </Item>
+        <Item
+          label='Room'
+          name='roomId'
+          rules={[{
+            required: true,
+            message: 'Please select the room code :D'
+          }]}
+        >
+          <Select
+            showSearch
+            placeholder='Select a room'
+            optionFilterProp='children'
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {
+              rooms.map((room, index) => (
+                <Option key={index} value={room._id}>
+                  {`${room.code}`}
+                </Option>
+              ))
+            }
+          </Select>
+        </Item>
+        <Item
+          label='Weekday'
+          name='weekday'
+          rules={[{
+            required: true,
+            message: 'Please select the weekday :D'
+          }]}
+        >
+          <Select placeholder='Select the weekday'>
+            <Option key={"0"} value={"0"}>Monday</Option>
+            <Option key={"1"} value={"1"}>Tuesday</Option>
+            <Option key={"2"} value={"2"}>Wednesday</Option>
+            <Option key={"3"} value={"3"}>Thursday</Option>
+            <Option key={"4"} value={"4"}>Friday</Option>
+            <Option key={"5"} value={"5"}>Saturday</Option>
+          </Select>
+        </Item>
+        <Item
+          label='Starting period'
+          name='startPeriod'
+          rules={[{
+            required: true,
+            message: 'Please input the starting period :D'
+          }, {
+            type: 'number',
+            message: 'Please input the starting period in number :D'
+          }]}
+        >
+          <InputNumber min={1} max={15} />
+        </Item>
+        <Item
+          label='Period number'
+          name='periodNum'
+          rules={[{
+            required: true,
+            message: 'Please input the number of periods :D'
+          }, {
+            type: 'number',
+            message: 'Please input the number of periods :D'
+          }]}
+        >
+          <InputNumber min={2} max={5} />
+        </Item>
+      </Fragment>
+    );
+
+    const updateFormItem = (
+      <Item
+        label='Registered students'
+        name='regStudentIds'
+      >
+        <Select
+          mode='multiple'
+          allowClear={!isUpdating}
+          defaultValue={isUpdating ? updatingCourse.regStudentIds : []}
+        >
+          {
+            students.map(student => (
+              <Option value={student._id}>
+                {`${student.id} - ${student.name}`}
+              </Option>
+            ))
+          }
+        </Select>
+      </Item>
+    );
+
     const form = (
       <Modal
-        title={isUpdating ? 'Update Course' : 'Create New Course'}
+        title={isUpdating ? 'Update Course\'s Registrations' : 'Create New Course'}
         visible={showForm}
         confirmLoading={confirmLoading}
         onCancel={this.toggleCreate}
@@ -221,162 +382,15 @@ export default class Courses extends Component {
         <Form
           {...layout}
           id={'courseForm'}
-          onFinish={this.createCourseHandler}
+          onFinish={isUpdating ? this.updateRegistrationsHandler : this.createCourseHandler}
           // onFinishFailed={null}
           initialValues={isUpdating ? updatingCourse : null}
         >
-          <Item
-            label='Subject'
-            name='subjectId'
-            rules={[{
-              required: true,
-              message: 'Please select the subject at hand :D'
-            }]}
-          >
-            <Select
-              showSearch
-              placeholder='Select a subject'
-              optionFilterProp='children'
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {
-                subjects.map((subject, index) => (
-                  <Option key={index} value={subject._id}>
-                    {`${subject.id} - ${subject.name}`}
-                  </Option>
-                ))
-              }
-            </Select>
-          </Item>
-          <Item
-            label='Lecturer'
-            name='lecturerId'
-            rules={[{
-              required: true,
-              message: 'Please select the responsible lecturer :D'
-            }]}
-          >
-            <Select
-              showSearch
-              placeholder='Select the responsible lecturer'
-              optionFilterProp='children'
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {
-                lecturers.map(lecturer => (
-                  <Option value={lecturer._id}>
-                    {lecturer.name}
-                  </Option>
-                ))
-              }
-            </Select>
-          </Item>
-          <Item
-            label='Class Type'
-            name='classType'
-            rules={[{
-              required: true,
-              message: 'Please select the corresponding type of class :D'
-            }]}
-          >
-            <Select
-              placeholder='Select the class type'
-            // value={isUpdating && (updatingCourse.classType === "0" ? "Theory" : "Laboratory")}
-            >
-              <Option key={"0"} value={"0"}>Theory</Option>
-              <Option key={"1"} value={"1"}>Laboratory</Option>
-            </Select>
-          </Item>
-          <Item
-            label='Room'
-            name='roomId'
-            rules={[{
-              required: true,
-              message: 'Please select the room code :D'
-            }]}
-          >
-            <Select
-              showSearch
-              placeholder='Select a room'
-              optionFilterProp='children'
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {
-                rooms.map((room, index) => (
-                  <Option key={index} value={room._id}>
-                    {`${room.code}`}
-                  </Option>
-                ))
-              }
-            </Select>
-          </Item>
-          <Item
-            label='Weekday'
-            name='weekday'
-            rules={[{
-              required: true,
-              message: 'Please select the weekday :D'
-            }]}
-          >
-            <Select placeholder='Select the weekday'>
-              <Option key={"0"} value={"0"}>Monday</Option>
-              <Option key={"1"}  value={"1"}>Tuesday</Option>
-              <Option key={"2"}  value={"2"}>Wednesday</Option>
-              <Option key={"3"}  value={"3"}>Thursday</Option>
-              <Option key={"4"}  value={"4"}>Friday</Option>
-              <Option key={"5"}  value={"5"}>Saturday</Option>
-            </Select>
-          </Item>
-          <Item
-            label='Starting period'
-            name='startPeriod'
-            rules={[{
-              required: true,
-              message: 'Please input the starting period :D'
-            }, {
-              type: 'number',
-              message: 'Please input the starting period in number :D'
-            }]}
-          >
-            <InputNumber min={1} max={15} />
-          </Item>
-          <Item
-            label='Period number'
-            name='periodNum'
-            rules={[{
-              required: true,
-              message: 'Please input the number of periods :D'
-            }, {
-              type: 'number',
-              message: 'Please input the number of periods :D'
-            }]}
-          >
-            <InputNumber min={2} max={5} />
-          </Item>
-          <Item
-            label='Registered students'
-            name='regStudentIds'
-          >
-            <Select
-              mode='multiple'
-              allowClear={!isUpdating}
-              defaultValue={isUpdating ? updatingCourse.regStudentIds : []}
-            >
-              {
-                students.map(student => (
-                  <Option value={student._id}>
-                    {`${student.id} - ${student.name}`}
-                  </Option>
-                ))
-              }
-            </Select>
-          </Item>
+          {
+            isUpdating ?
+              updateFormItem :
+              createFormItems
+          }
           <Item {...tailLayout}>
             <Button
               type='primary'
