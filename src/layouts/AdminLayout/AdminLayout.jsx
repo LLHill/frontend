@@ -36,7 +36,7 @@ export default class AdminLayout extends Component {
             { key: 6, text: 'Room', to: `/rooms`, icon: <UpSquareOutlined /> },
           ]}
           onLogout={this.props.onLogout}
-          dividerHeight='30vh'
+          dividerHeight='20vh'
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>

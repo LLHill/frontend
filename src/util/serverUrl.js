@@ -1,2 +1,2 @@
-const serverUrl = 'http://localhost:8080';
+const serverUrl = 'https://hcmiu-presence.herokuapp.com';
 export default serverUrl;

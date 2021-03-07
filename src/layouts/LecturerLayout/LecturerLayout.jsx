@@ -28,7 +28,7 @@ export default class LecturerLayout extends Component {
             { key: 2, text: 'Courses', to: '/courses', icon: <ReadOutlined /> },
             { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> }
           ]}
-          dividerHeight='55vh'
+          dividerHeight='40vh'
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>
