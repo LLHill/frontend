@@ -156,3 +156,8 @@ class App extends Component {
 };
 
 export default withRouter(App);
+
+/*
+  TODO:
+  Add loading to table
+ */

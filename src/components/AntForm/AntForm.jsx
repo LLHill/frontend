@@ -10,7 +10,7 @@ const AntForm = props => {
     form.resetFields();
   };
 
-  const { layout, tailLayout, id, onFinish, onFinishFailed, onCancel } = props;
+  const { layout, tailLayout, id, onFinish, onFinishFailed, onCancel, initialValues } = props;
 
   return (
     <Form
@@ -19,16 +19,17 @@ const AntForm = props => {
       id={id}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
+      initialValues={initialValues}
     >
       {props.children}
       <Item {...tailLayout}>
         <Button
           type='primary'
           htmlType='submit'
-          style={{ marginRight: '10px'}}
+          style={{ marginRight: '10px' }}
         >Submit</Button>
-        <Button 
-          htmlType="button" 
+        <Button
+          htmlType="button"
           onClick={onReset}
         >
           Reset
