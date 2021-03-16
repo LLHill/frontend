@@ -1,7 +1,7 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 // import { Link } from 'react-router-dom'
-import openSocket from 'socket.io-client'
+// import openSocket from 'socket.io-client'
 import { Table, Space, Button, Form, Input, Select, Modal } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
@@ -10,7 +10,7 @@ import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBread
 import AntForm from '../../../components/AntForm/AntForm'
 
 import axios from '../../../axios-instance'
-import serverUrl from '../../../util/serverUrl'
+// import serverUrl from '../../../util/serverUrl'
 
 const { Item } = Form;
 const { Option } = Select;
@@ -59,13 +59,13 @@ export default class Students extends Component {
         this.props.onError(err);
         this.setState({ loading: false });
       });
-    const socket = openSocket(serverUrl);
-    socket.on('new-rfid', data => {
-      console.log(data);
-      if (data.action === 'update')
-        this.setState({ currentRFID: data.rfidTag })
-      console.log(this.state.currentRFID)
-    });
+    // const socket = openSocket(serverUrl);
+    // socket.on('new-rfid', data => {
+    //   console.log(data);
+    //   if (data.action === 'update')
+    //     this.setState({ currentRFID: data.rfidTag })
+    //   console.log(this.state.currentRFID)
+    // });
   }
 
   toggleCreate = () => this.setState({
@@ -85,9 +85,11 @@ export default class Students extends Component {
         return res.data.student;
       })
       .then(student => this.setState({
-        showForm: !this.state.showForm,
         isUpdating: !this.state.isUpdating,
         updatingStudent: student
+      }))
+      .then(res => this.setState({
+        showForm: true
       }))
       .catch(err => this.props.onError(err));
   }
@@ -97,8 +99,7 @@ export default class Students extends Component {
   createStudentHandler = (values) => {
     console.log(values)
     axios.post('/admin/student', {
-      ...values,
-      // rfidTag: this.state.currentRFID
+      ...values
     }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -118,9 +119,7 @@ export default class Students extends Component {
   }
 
   updateStudentRFIDHandler = (values) => {
-    console.log(values)
-    console.log(this.state)
-    axios.put(`/admin/student-rfid/${this.state.updatingStudent._id}`, { rfidTag: values.rfidTag }, {
+    axios.put(`/admin/student-rfid?studentId=${this.state.updatingStudent._id}&rfidTag=${values.rfidTag}`, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
@@ -128,7 +127,12 @@ export default class Students extends Component {
       .then(res => {
         console.log(res)
         if (res.status === 200) {
-
+          this.setState({
+            showForm: false,
+            RFIDs: this.state.RFIDs.filter(rfid => rfid.rfidTag !== values.rfidTag),
+            updatingStudent: {},
+            isUpdating: false
+          })
         }
       })
       .catch(err => this.props.onError(err));
@@ -343,7 +347,6 @@ export default class Students extends Component {
             required: true,
             message: 'Please select the tag number :D'
           }]}
-          initialValue={updatingStudent.rfidTag}
         >
           <Select
             showSearch

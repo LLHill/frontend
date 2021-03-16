@@ -17,7 +17,10 @@ const AntForm = props => {
       {...layout}
       form={form}
       id={id}
-      onFinish={onFinish}
+      onFinish={(values) => {
+        onFinish(values);
+        onReset();
+      }}
       onFinishFailed={onFinishFailed}
       initialValues={initialValues}
     >
@@ -37,7 +40,7 @@ const AntForm = props => {
         <Button
           type='link'
           htmlType="button"
-          onClick={onCancel}
+          onClick={() => { onCancel(); onReset(); }}
         >Cancel</Button>
       </Item>
     </Form>

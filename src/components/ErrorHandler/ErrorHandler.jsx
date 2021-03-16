@@ -12,8 +12,8 @@ export const ErrorHandler = (props) => {
         onCancel={onHandle}
         visible={error ? true : false}
       >
-        <p>{error && error.message}</p>
-        <p>{error && error.data && error.data.map(err => JSON.stringify(err))}</p>
+        <p>Message: {error && error.message}</p>
+        <p>{error && error.data && 'Data:' + error.data.map(err => JSON.stringify(err))}</p>
       </Modal>
     </Fragment>
   )
