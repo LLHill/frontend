@@ -326,12 +326,12 @@ export default class Courses extends Component {
           }]}
         >
           <Select placeholder='Select the weekday'>
-            <Option key={"0"} value={"0"}>Monday</Option>
-            <Option key={"1"} value={"1"}>Tuesday</Option>
-            <Option key={"2"} value={"2"}>Wednesday</Option>
-            <Option key={"3"} value={"3"}>Thursday</Option>
-            <Option key={"4"} value={"4"}>Friday</Option>
-            <Option key={"5"} value={"5"}>Saturday</Option>
+            <Option key={"1"} value={"1"}>Monday</Option>
+            <Option key={"2"} value={"2"}>Tuesday</Option>
+            <Option key={"3"} value={"3"}>Wednesday</Option>
+            <Option key={"4"} value={"4"}>Thursday</Option>
+            <Option key={"5"} value={"5"}>Friday</Option>
+            <Option key={"6"} value={"6"}>Saturday</Option>
           </Select>
         </Item>
         <Item
