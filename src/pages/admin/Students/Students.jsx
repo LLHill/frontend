@@ -59,13 +59,6 @@ export default class Students extends Component {
         this.props.onError(err);
         this.setState({ loading: false });
       });
-    // const socket = openSocket(serverUrl);
-    // socket.on('new-rfid', data => {
-    //   console.log(data);
-    //   if (data.action === 'update')
-    //     this.setState({ currentRFID: data.rfidTag })
-    //   console.log(this.state.currentRFID)
-    // });
   }
 
   toggleCreate = () => this.setState({

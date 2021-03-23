@@ -39,7 +39,7 @@ export default class SideDrawer extends Component {
 
   render() {
     const { collapsed, theme } = this.state;
-    const { elements, onLogout, onToggleChangePassword, dividerHeight } = this.props;
+    const { elements, onLogout } = this.props;
 
     return (
       <Sider theme={theme} collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
@@ -59,7 +59,7 @@ export default class SideDrawer extends Component {
               </Menu.Item>
             ))
           }
-          <Menu.Divider style={{ backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc', height: dividerHeight }} />
+          <Menu.Divider style={{ backgroundColor: theme === 'dark' ? '#04142c' : '#fcfcfc' }} />
           <Menu.Item key={'darkmode'} icon={<BulbOutlined />}>
             Dark Mode
             <Switch
@@ -68,8 +68,8 @@ export default class SideDrawer extends Component {
               style={{ marginLeft: '1rem' }}
             />
           </Menu.Item>
-          <Menu.Item key={'changepass'} icon={<KeyOutlined />} onClick={onToggleChangePassword}>
-            Change Password
+          <Menu.Item key={'changepass'} icon={<KeyOutlined />}>
+            <Link to={'/password'}>Change Password</Link>
           </Menu.Item>
           <Menu.Item key={'logout'} icon={<PoweroffOutlined />} danger onClick={onLogout}>
             Logout

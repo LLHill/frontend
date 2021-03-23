@@ -162,7 +162,7 @@ export default class Courses extends Component {
         <Column
           title='Room'
           key='room'
-          dataIndex='room'
+          render={(text, record) => record.roomId && record.roomId.code}
         />
         <Column
           title='Weekday'
