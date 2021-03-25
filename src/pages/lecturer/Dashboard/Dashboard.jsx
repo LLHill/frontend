@@ -120,7 +120,8 @@ export default class Dashboard extends Component {
       <Card
         style={{
           maxWidth: 400,
-          marginTop: 16
+          marginTop: 16,
+          marginRight: 20
         }}
         actions={[
           <SettingOutlined key="setting" />,
@@ -143,11 +144,11 @@ export default class Dashboard extends Component {
           ]}
         />
         <Row>
-          <Col flex={3}>
-            {currentCourseChart}
-          </Col>
           <Col flex={2}>
             {currentCourseCard}
+          </Col>
+          <Col flex={3}>
+            {currentCourseChart}
           </Col>
         </Row>
         {/* <Divider>Note:</Divider>

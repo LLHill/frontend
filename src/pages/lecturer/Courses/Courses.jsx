@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
 import { Table, Space, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
@@ -14,10 +15,12 @@ export default class Courses extends Component {
     subjects: [],
     students: [],
     searchText: '',
-    searchedColumn: ''
+    searchedColumn: '',
+    loading: false
   }
 
   componentDidMount() {
+    this.setState({ loading: true })
     axios.get('/lecturer/courses', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -29,7 +32,8 @@ export default class Courses extends Component {
         this.setState({
           courses,
           subjects,
-          students
+          students,
+          loading: false
         })
       })
       .catch(err => this.props.onError(err));
@@ -102,8 +106,8 @@ export default class Courses extends Component {
           textToHighlight={text ? text.toString() : ''}
         />
       ) : (
-          text
-        ),
+        text
+      ),
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -121,10 +125,10 @@ export default class Courses extends Component {
   // _______
 
   render() {
-    const { courses/*, subjects, students*/ } = this.state;
+    const { courses, loading/*, subjects, students*/ } = this.state;
 
     const table = (
-      <Table dataSource={courses} rowKey='_id'>
+      <Table dataSource={courses} rowKey='_id' loading={loading}>
         <Column
           title='Subject ID'
           key='subjectId'
@@ -138,7 +142,7 @@ export default class Courses extends Component {
           render={(text, record) => (
             this.getSubject(record.subjectId).name
           )}
-          // {...this.getColumnSearchProps('classType')}
+        // {...this.getColumnSearchProps('classType')}
         />
         <Column
           title='Class Type'
@@ -192,6 +196,7 @@ export default class Courses extends Component {
           key='action'
           render={(text, record) => (
             <Space size='middle'>
+              <Button type='primary'><Link to={`/reports/${record._id}`}>View reports</Link></Button>
               <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
             </Space>
           )}

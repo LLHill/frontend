@@ -1,10 +1,12 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, Modal } from 'antd'
-import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
+import { Table, Space, Button, Form, Input, Modal, Typography } from 'antd'
 
+import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 import axios from '../../../axios-instance'
+
+const { Text } = Typography
 
 const layout = {
   labelCol: { span: 8 },
@@ -20,6 +22,8 @@ export default class Lecturers extends Component {
     lecturers: [],
     showForm: false,
     confirmLoading: false,
+    showResult: false,
+    resultMessage: ''
   }
 
   componentDidMount() {
@@ -38,6 +42,8 @@ export default class Lecturers extends Component {
   }
 
   toggleForm = () => this.setState({ showForm: !this.state.showForm })
+
+  toggleResult = () => this.setState({ showResult: !this.state.showResult, resultMessage: '' })
 
   setLecturers = (lecturerData) => {
     const lecturers = lecturerData.map(lec => {
@@ -77,9 +83,10 @@ export default class Lecturers extends Component {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
-      .then(res => {
-        console.log(res);
-      })
+      .then(res => this.setState({
+        showResult: true,
+        resultMessage: res.data.message
+      }))
       .catch(err => this.props.onError(err));
   }
 
@@ -99,7 +106,7 @@ export default class Lecturers extends Component {
   }
 
   render() {
-    const { lecturers, showForm, confirmLoading } = this.state;
+    const { lecturers, showForm, confirmLoading, showResult, resultMessage } = this.state;
 
     const columns = [
       {
@@ -129,6 +136,17 @@ export default class Lecturers extends Component {
         )
       }
     ];
+
+    const result = (
+      <Modal 
+        title={'Operation\'s result'}
+        visible={showResult}
+        onOk={this.toggleResult}
+        onCancel={this.toggleResult}
+      >
+        <Text>{resultMessage}</Text>
+      </Modal>
+    )
 
     const form = (
       <Modal
@@ -208,6 +226,7 @@ export default class Lecturers extends Component {
         </div>
         <Table dataSource={lecturers} columns={columns} rowKey='_id' />
         {form}
+        {result}
       </Fragment>
     )
   };

@@ -4,8 +4,7 @@ import { Switch, Route } from "react-router-dom";
 import { Layout, Typography } from 'antd';
 import {
   DesktopOutlined,
-  ReadOutlined,
-  PieChartOutlined
+  ReadOutlined
 } from '@ant-design/icons';
 
 import SideDrawer from '../../components/Navigation/SideDrawer/SideDrawer';
@@ -18,24 +17,22 @@ const { Title } = Typography;
 
 export default class LecturerLayout extends Component {
   render() {
-    const { token, onError } = this.props;
-
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <SideDrawer
           elements={[
             { key: 1, text: 'Dashboard', to: '/', icon: <DesktopOutlined /> },
             { key: 2, text: 'Courses', to: '/courses', icon: <ReadOutlined /> },
-            { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> }
+            // { key: 3, text: 'Reports', to: '/reports', icon: <PieChartOutlined /> }
           ]}
           onLogout={this.props.onLogout}
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>
             <Switch>
-              <Route path={`/`} exact render={() => <Dashboard token={token} onError={onError} />} />
-              <Route path={`/courses`} render={() => <Courses token={token} onError={onError} />} />
-              <Route path={`/reports`} render={() => <Reports token={token} onError={onError} />} />
+              <Route path={`/`} exact render={() => <Dashboard {...this.props} />} />
+              <Route path={`/courses`} render={() => <Courses {...this.props} />} />
+              <Route path={`/reports/:courseId`} render={(props) => <Reports {...props} {...this.props} />} />
               <Route component={() => <Title>404 Not Found</Title>} />
             </Switch>
           </Content>
