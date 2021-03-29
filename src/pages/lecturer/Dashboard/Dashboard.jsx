@@ -38,15 +38,22 @@ export default class Dashboard extends Component {
       console.log(data);
       if (data.action === 'processing' && data.courseId === this.state.currentCourse._id)
         this.setState({ avtLoading: true });
-      if (data.action === 'create' && data.courseId === this.state.currentCourse._id)
+      if (data.action === 'create' && data.courseId === this.state.currentCourse._id) {
+        let currentAttendanceDate = this.state.currentCourse.attendanceGroupByDate.pop();
+        currentAttendanceDate.count++;
         this.setState({
           currentCourse: {
             ...this.state.currentCourse,
             attendanceCount: this.state.currentCourse.attendanceCount + 1,
-            recentAttendee: data.studentName
+            recentAttendee: data.studentName,
+            attendanceGroupByDate: [
+              ...this.state.currentCourse.attendanceGroupByDate,
+              currentAttendanceDate
+            ]
           },
           avtLoading: false
         });
+      }
       if ((data.action === 'update' || data.action === 'no-action') && data.courseId === this.state.currentCourse._id)
         this.setState({ avtLoading: false });
     });
