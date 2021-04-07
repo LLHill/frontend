@@ -77,7 +77,7 @@ export default class Lecturers extends Component {
     console.log(newPassword)
     axios.put('/admin/lecturer-password', {
       lecturerId: lecturerId,
-      newPassword: newPassword
+      newPassword: "123456"
     }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`

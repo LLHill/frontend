@@ -20,7 +20,7 @@ export default class Courses extends Component {
   }
 
   componentDidMount() {
-    this.setState({ loading: true })
+    this.setState({ loading: true });
     axios.get('/lecturer/courses', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -33,6 +33,22 @@ export default class Courses extends Component {
           courses,
           subjects,
           students,
+          loading: false
+        })
+      })
+      .catch(err => this.props.onError(err));
+  }
+
+  downloadOverallReport = (courseId) => {
+    this.setState({ loading: true });
+    axios.get(`/lecturer/overall-report/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      }
+    })
+      .then(res => {
+        console.log(res.data)
+        this.setState({
           loading: false
         })
       })
@@ -196,7 +212,8 @@ export default class Courses extends Component {
           key='action'
           render={(text, record) => (
             <Space size='middle'>
-              <Button type='primary'><Link to={`/reports/${record._id}`}>View reports</Link></Button>
+              <Button type='primary'><Link to={`/reports/${record._id}`}>View attendances</Link></Button>
+              <Button type='default' onClick={() => this.downloadOverallReport(record._id)}>Download report</Button>
               <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
             </Space>
           )}
