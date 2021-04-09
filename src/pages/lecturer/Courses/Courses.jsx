@@ -229,7 +229,7 @@ export default class Courses extends Component {
           ]}
         />
         {table}
-        <ul>
+        {/* <ul>
           <li>Table for courses</li>
           <li>
             <ul>
@@ -246,7 +246,7 @@ export default class Courses extends Component {
           </li>
           <li>Filters for type, periods</li>
           <li>Search for course name</li>
-        </ul>
+        </ul> */}
       </div>
     )
   }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Typography, Table } from 'antd'
+import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons'
 
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 import axios from '../../../axios-instance'
@@ -12,7 +13,8 @@ export default class Reports extends Component {
   state = {
     loading: false,
     course: {},
-    attendances: []
+    dates: [],
+    studentAttendances: []
   }
 
   componentDidMount() {
@@ -27,7 +29,8 @@ export default class Reports extends Component {
         console.log(res.data)
         this.setState({
           course: res.data.course,
-          attendances: res.data.overallAttendance,
+          dates: res.data.dates,
+          studentAttendances: res.data.studentAttendances,
           loading: false
         })
       })
@@ -35,37 +38,47 @@ export default class Reports extends Component {
   }
 
   render() {
-    const { course, attendances, loading } = this.state
+    const { course, dates, studentAttendances, loading } = this.state
 
-    const table = (
-      <Table dataSource={attendances} rowKey='_id' loading={loading}>
-        <Column 
-          title='Date'
-          key='date'
-          dataIndex='_id'
+    let table = (
+      <Table
+        dataSource={studentAttendances}
+        rowKey='id'
+        loading={loading}
+      >
+        <Column title='#' key='#'
+          render={(text, record) => studentAttendances.indexOf(record) + 1}
         />
-        <Column 
-          title='Attendees'
-          key='attendees'
-          dataIndex='attendeeCount'
-        />
+        <Column title='Student ID' dataIndex='id' key='id' />
+        <Column title='Student Name' dataIndex='name' key='name' />
+        {
+          dates.map((date, index) => (
+            <Column title={date} key={date}
+              render={(text, record) => record.attendances[index]
+                ? <CheckCircleTwoTone twoToneColor="#52c41a" />
+                : <CloseCircleTwoTone twoToneColor="#eb2f96" />
+              }
+            />
+          ))
+        }
       </Table>
     )
+
     return (
       <div>
         <NavBreadcrumb
           elements={[
             { key: 1, text: 'Lecturer', to: '/' },
-            { key: 2, text: 'Courses', to: '/courses'},
+            { key: 2, text: 'Attendance', to: '/courses' },
             { key: 3, text: course.subjectName }
           ]}
         />
         <div style={{ display: course.subjectName ? 'flex' : 'none', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Title level={2}>{course.subjectName} ({course.headCount})</Title>
-          <Text>{convertToWeekday(course.weekday)} ({course.periods&&course.periods[0]} - {course.periods&&course.periods[course.periods.length - 1]}) {course.roomCode}</Text>
+          <Title level={2}>{course.subjectName} ({studentAttendances.length})</Title>
+          <Text>{convertToWeekday(course.weekday)} ({course.periods && course.periods[0]} - {course.periods && course.periods[course.periods.length - 1]}) {course.room}</Text>
         </div>
         {table}
-        <h2>May put this in courses page</h2>
+        {/* <h2>May put this in courses page</h2>
         <ul>
           <li>Overall course's info:</li>
           <li>
@@ -89,7 +102,7 @@ export default class Reports extends Component {
           <li>Daily reports</li>
           <li>Ban warning</li>
           <li>Early praises</li>
-        </ul>
+        </ul> */}
       </div>
     )
   }
