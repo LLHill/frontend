@@ -78,10 +78,10 @@ export default class Students extends Component {
         return res.data.student;
       })
       .then(student => this.setState({
-        isUpdating: !this.state.isUpdating,
         updatingStudent: student
       }))
       .then(res => this.setState({
+        isUpdating: !this.state.isUpdating,
         showForm: true
       }))
       .catch(err => this.props.onError(err));
