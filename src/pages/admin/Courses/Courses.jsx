@@ -37,7 +37,7 @@ export default class Courses extends Component {
 
   componentDidMount() {
     this.setState({ loading: true });
-    axios.get('/admin/courses', {
+    axios.get(`/admin/courses`, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
@@ -50,7 +50,6 @@ export default class Courses extends Component {
         rooms: res.data.rooms,
         loading: false
       }))
-      .then(res => console.log(this.state))
       .catch(err => this.props.onError(err));
   }
 
@@ -66,10 +65,7 @@ export default class Courses extends Component {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
-      .then(res => {
-        console.log(res.data)
-        return res.data.course
-      })
+      .then(res => res.data.course)
       .then(course => this.setState({
         showForm: !this.state.showForm,
         isUpdating: true,

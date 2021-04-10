@@ -1,6 +1,6 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
+// import { Link } from 'react-router-dom'
 import { Table, Space, Button, Form, Input, Modal, Popconfirm, message } from 'antd'
 
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
@@ -128,7 +128,7 @@ export default class Lecturers extends Component {
         key: 'action',
         render: (text, record, index) => (
           <Space size='middle'>
-            <Button type='primary'><Link to={`/courses?lecturerId=${record._id}`}>View courses</Link></Button>
+            {/* <Button type='primary'><Link to={`/courses?lecturerId=${record._id}`}>View courses</Link></Button> */}
             <Button onClick={() => this.updatePasswordHandler(record._id)}>Update Password</Button>
             <Popconfirm
               title='Are you sure?'

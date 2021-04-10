@@ -3,7 +3,7 @@ import { Modal } from 'antd'
 
 export const ErrorHandler = (props) => {
   const { onHandle, error } = props;
-  console.log(error);
+  error && console.log(error);
   return (
     <Fragment>
       <Modal
