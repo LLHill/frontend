@@ -22,7 +22,7 @@ export default class Lecturers extends Component {
     showForm: false,
     loading: false,
     showPopconfirm: -1,
-    confimLoading: false
+    confirmLoading: false
   }
 
   componentDidMount() {
@@ -55,6 +55,7 @@ export default class Lecturers extends Component {
   }
 
   createLecturerHandler = (values) => {
+    this.setState({ confirmLoading: true });
     axios.post('/admin/lecturer', values, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -62,7 +63,7 @@ export default class Lecturers extends Component {
     })
       .then(res => {
         if (res.status === 201) {
-          this.setState({ showForm: false });
+          this.setState({ showForm: false, confirmLoading: false });
           this.setLecturers([...this.state.lecturers, res.data.lecturer]);
           message.success(res.data.message || 'Create new lecturer :D');
         }
@@ -86,7 +87,7 @@ export default class Lecturers extends Component {
   }
 
   deleteLecturerHandler = (lecturerId) => {
-    this.setState({ confimLoading: true })
+    this.setState({ confirmLoading: true });
     axios.delete('/admin/lecturer/' + lecturerId, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -96,7 +97,7 @@ export default class Lecturers extends Component {
         console.log(res)
         if (res.status === 200) {
           this.setLecturers(this.state.lecturers.filter(lec => lec._id !== lecturerId));
-          this.setState({ confimLoading: false, showPopconfirm: -1 });
+          this.setState({ confirmLoading: false, showPopconfirm: -1 });
           message.success(res.data.message || 'Lecturer Deleted :D');
         }
       })
@@ -104,7 +105,7 @@ export default class Lecturers extends Component {
   }
 
   render() {
-    const { lecturers, showForm, loading, showPopconfirm, confimLoading } = this.state;
+    const { lecturers, showForm, loading, showPopconfirm, confirmLoading } = this.state;
 
     const columns = [
       {
@@ -133,7 +134,7 @@ export default class Lecturers extends Component {
               title='Are you sure?'
               visible={showPopconfirm === index}
               onConfirm={() => this.deleteLecturerHandler(record._id)}
-              okButtonProps={{ loading: confimLoading }}
+              okButtonProps={{ loading: confirmLoading }}
               onCancel={this.toggleShowPopconfirm}
             >
               <Button onClick={() => this.toggleShowPopconfirm(index)} danger type='link'>Delete</Button>
@@ -146,6 +147,7 @@ export default class Lecturers extends Component {
     const form = (
       <Modal
         title={'Create New Lecturer'}
+        confirmLoading={confirmLoading}
         visible={showForm}
         onCancel={this.toggleForm}
         footer={[]}
@@ -194,11 +196,10 @@ export default class Lecturers extends Component {
               type='primary'
               htmlType='submit'
             >Submit</Button>
-
-              <Button
-                type='link'
-                onClick={this.toggleForm}
-              >Cancel</Button>
+            <Button
+              type='link'
+              onClick={this.toggleForm}
+            >Cancel</Button>
           </Form.Item>
         </Form>
       </Modal>

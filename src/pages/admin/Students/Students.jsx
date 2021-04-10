@@ -2,7 +2,7 @@ import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 // import { Link } from 'react-router-dom'
 // import openSocket from 'socket.io-client'
-import { Table, Space, Button, Form, Input, Select, Modal } from 'antd'
+import { Table, Space, Button, Form, Input, Select, Popconfirm, message } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
 
@@ -20,10 +20,6 @@ const layout = {
   wrapperCol: { span: 16 },
 };
 
-const tailLayout = {
-  wrapperCol: { offset: 8, span: 16 },
-};
-
 export default class Students extends Component {
   state = {
     students: [],
@@ -31,8 +27,11 @@ export default class Students extends Component {
     RFIDs: [],
     showForm: false,
     loading: false,
+    submitLoading: false,
+    showPopconfirm: -1,
+    confirmLoading: false,
     isUpdating: false,
-    updatingStudent: {},
+    updatingStudent: null,
     searchText: '',
     searchedColumn: ''
   }
@@ -61,36 +60,25 @@ export default class Students extends Component {
       });
   }
 
-  toggleCreate = () => this.setState({
-    showForm: !this.state.showForm,
+  onCancelForm = () => this.setState({
     isUpdating: false,
-    updatingStudent: {}
+    updatingStudent: null,
+    showForm: false
   })
 
-  toggleUpdate = (studentId) => {
-    axios.get(`/admin/student/${studentId}`, {
-      headers: {
-        'Authorization': `Bearer ${this.props.token}`
-      }
-    })
-      .then(res => {
-        console.log(res.data);
-        return res.data.student;
-      })
-      .then(student => this.setState({
-        updatingStudent: student
-      }))
-      .then(res => this.setState({
-        isUpdating: !this.state.isUpdating,
-        showForm: true
-      }))
-      .catch(err => this.props.onError(err));
-  }
+  toggleCreate = () => this.setState({ showForm: true })
+
+  toggleUpdate = (studentId) => this.setState({
+    updatingStudent: this.state.students.find(s => s._id === studentId),
+    isUpdating: true
+  }, () => this.setState({ showForm: true }))
+
+  toggleShowPopconfirm = (index = -1) => this.setState({ showPopconfirm: index })
 
   setStudents = (studentData) => this.setState({ students: studentData })
 
   createStudentHandler = (values) => {
-    console.log(values)
+    this.setState({ submitLoading: true });
     axios.post('/admin/student', {
       ...values
     }, {
@@ -99,51 +87,76 @@ export default class Students extends Component {
       }
     })
       .then(res => {
-        console.log(res)
         if (res.status === 201) {
           this.setState({
+            submitLoading: false,
             showForm: false,
             RFIDs: this.state.RFIDs.filter(rfid => rfid.rfidTag !== values.rfidTag)
           });
           this.setStudents([...this.state.students, res.data.student]);
+          message.success(res.data.message || 'Student Created :D');
         }
       })
-      .catch(err => this.props.onError(err));
+      .catch(err => {
+        this.props.onError(err);
+        this.setState({ submitLoading: false });
+      });
   }
 
   updateStudentRFIDHandler = (values) => {
+    this.setState({ submitLoading: true });
     axios.put(`/admin/student-rfid?studentId=${this.state.updatingStudent._id}&rfidTag=${values.rfidTag}`, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
       .then(res => {
-        console.log(res)
         if (res.status === 200) {
           this.setState({
-            showForm: false,
+            submitLoading: false,
             RFIDs: this.state.RFIDs.filter(rfid => rfid.rfidTag !== values.rfidTag),
-            updatingStudent: {},
-            isUpdating: false
-          })
+            updatingStudent: null,
+            isUpdating: false,
+            showForm: false
+          });
+          message.success(res.data.message || 'Student RFID Updated :D');
         }
       })
-      .catch(err => this.props.onError(err));
+      .catch(err => {
+        this.props.onError(err);
+        this.setState({
+          submitLoading: false,
+          updatingStudent: null,
+          isUpdating: false,
+          showForm: false
+        })
+      });
   }
 
   deleteStudentHandler = (studentId) => {
-    console.log(studentId)
+    this.setState({ confirmLoading: true });
     axios.delete('/admin/student/' + studentId, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
       .then(res => {
-        console.log(res)
-        if (res.status === 200)
+        if (res.status === 200) {
+          this.setState({
+            showPopconfirm: -1,
+            confirmLoading: false
+          });
           this.setStudents(this.state.students.filter(student => student._id !== studentId));
+          message.success(res.data.message || 'Student Deleted :D');
+        }
       })
-      .catch(err => this.props.onError(err));
+      .catch(err => {
+        this.props.onError(err);
+        this.setState({
+          showPopconfirm: -1,
+          confirmLoading: false
+        });
+      });
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -225,7 +238,7 @@ export default class Students extends Component {
   };
 
   render() {
-    const { students, showForm, loading, RFIDs, isUpdating, updatingStudent } = this.state;
+    const { students, showForm, loading, submitLoading, showPopconfirm, confirmLoading, RFIDs, isUpdating, updatingStudent } = this.state;
 
     const columns = [
       {
@@ -249,11 +262,20 @@ export default class Students extends Component {
       {
         title: 'Action',
         key: 'action',
-        render: (text, record) => (
+        render: (text, record, index) => (
           <Space size='middle'>
             {/* <Button type='primary'><Link to={`/courses?studentId=${record._id}`}>View courses</Link></Button> */}
             <Button onClick={() => this.toggleUpdate(record._id)}>Update RFID</Button>
-            <Button onClick={() => this.deleteStudentHandler(record._id)} danger type='link'>Delete</Button>
+            <Popconfirm
+              title='Are you sure?'
+              visible={showPopconfirm === index}
+              onConfirm={() => this.deleteStudentHandler(record._id)}
+              okButtonProps={{ loading: confirmLoading }}
+              onCancel={this.toggleShowPopconfirm}
+            >
+
+            </Popconfirm>
+            <Button onClick={() => this.toggleShowPopconfirm(index)} danger type='link'>Delete</Button>
           </Space>
         )
       }
@@ -284,19 +306,6 @@ export default class Students extends Component {
         >
           <Input />
         </Item>
-        {/* <Form.Item
-            label="Student RFID Tag"
-            name="rfidTag"
-            initialValue={currentRFID}
-          >
-            <p
-              style={{
-                padding: '5px',
-                border: '1px lightgray solid',
-                backgroundColor: 'ghostwhite'
-              }}
-            >{currentRFID ? currentRFID : "Not yet scanned"}</p>
-          </Form.Item> */}
         <Item
           label='Student RFID Tag'
           name='rfidTag'
@@ -345,7 +354,6 @@ export default class Students extends Component {
             showSearch
             placeholder='Select a tag number'
             optionFilterProp='children'
-            // defaultValue={updatingStudent.rfidTag}
             filterOption={(input, option) =>
               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
@@ -361,32 +369,39 @@ export default class Students extends Component {
         </Item>
       </Fragment>
     )
-
-    const form = (
-      <Modal
-        title={isUpdating ? 'Update Student RFID' : 'Create New Student'}
-        visible={showForm}
-        loading={loading}
-        onCancel={this.toggleCreate}
-        footer={[]}
-      >
+    let form = null
+    if (showForm && isUpdating && updatingStudent)
+      form = (
         <AntForm
+          visible={showForm}
+          loading={submitLoading}
+          title={'Update Student RFID'}
           layout={{ ...layout }}
-          tailLayout={{ ...tailLayout }}
           id={'studentForm'}
-          onFinish={isUpdating ? this.updateStudentRFIDHandler : this.createStudentHandler}
-          onFinishFailed={null}
-          onCancel={this.toggleCreate}
-          initialValues={isUpdating ? updatingStudent : null}
+          initialValues={updatingStudent}
+          onFinish={this.updateStudentRFIDHandler}
+          onFinishFailed={(error) => this.props.onError(error)}
+          onCancel={this.onCancelForm}
         >
-          {
-            isUpdating ?
-              updateFormItems :
-              createFormItems
-          }
+          {updateFormItems}
         </AntForm>
-      </Modal>
-    );
+      )
+    else if (showForm)
+      form = (
+        <AntForm
+          visible={showForm}
+          loading={submitLoading}
+          title={'Create New Student'}
+          layout={{ ...layout }}
+          id={'studentForm'}
+          initialValues={null}
+          onFinish={this.createStudentHandler}
+          onFinishFailed={(error) => this.props.onError(error)}
+          onCancel={this.onCancelForm}
+        >
+          {createFormItems}
+        </AntForm>
+      );
 
     return (
       <Fragment>
