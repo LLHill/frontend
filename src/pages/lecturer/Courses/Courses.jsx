@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+// import fileSaver from 'file-saver'
 import { Table, Space, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
@@ -41,16 +42,21 @@ export default class Courses extends Component {
 
   downloadOverallReport = (courseId) => {
     this.setState({ loading: true });
-    axios.get(`/lecturer/overall-report/${courseId}`, {
+    axios.get(`/lecturer/download-report/${courseId}`, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
-      }
+      },
+      responseType: 'arraybuffer'
     })
       .then(res => {
-        console.log(res.data)
+        const dirtyFileName = res.headers['content-disposition'];
+        const regex = /filename[^;=\n]*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/;
+        let fileName = dirtyFileName.match(regex)[3];
+        let blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        // fileSaver.saveAs(blob, fileName);
         this.setState({
           loading: false
-        })
+        });
       })
       .catch(err => this.props.onError(err));
   }
