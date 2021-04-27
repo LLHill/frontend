@@ -220,7 +220,7 @@ export default class Courses extends Component {
             <Space size='middle'>
               <Button type='primary'><Link to={`/reports/${record._id}`}>View attendances</Link></Button>
               <Button type='default' onClick={() => this.downloadOverallReport(record._id)}>Download report</Button>
-              <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
+              {/* <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button> */}
             </Space>
           )}
         />

@@ -26,7 +26,10 @@ export default class Dashboard extends Component {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
-      .then(res => res.data)
+      .then(res => {
+        // console.log(res.data)
+        return res.data;
+      })
       .then(data => this.setState({
         loading: false,
         currentCourse: data.currentCourse && data.currentCourse
@@ -104,7 +107,7 @@ export default class Dashboard extends Component {
       const chartConfig = {
         data: currentCourse.attendanceGroupByDate,
         xField: 'count',
-        yField: '_id',
+        yField: 'date',
         style: {
           maxWidth: 800,
           height: 300
