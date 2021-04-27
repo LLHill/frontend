@@ -22,7 +22,7 @@ export default class SideDrawer extends Component {
   };
 
   state = {
-    collapsed: false,
+    collapsed: true,
     theme: 'dark'
   };
 
