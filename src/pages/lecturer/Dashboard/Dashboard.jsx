@@ -116,14 +116,30 @@ export default class Dashboard extends Component {
     });
 
     // set state of settings based on localStorage
-    // const isManual = localStorage.getItem('isManual');
-    // const manualNote = localStorage.getItem('manualNote');
-    // this.setState({
-    //   settings: {
-    //     isManual: isManual,
-    //     manualNote: manualNote
-    //   }
-    // });
+    const isManual = localStorage.getItem('isManual');
+    const manualNote = localStorage.getItem('manualNote');
+    const manualSettingsExpiryDate = localStorage.getItem('manualSettingsExpiryDate');
+    if (new Date(manualSettingsExpiryDate) <= new Date()) {
+      this.removeManualSettingsHandler();
+      return;
+    }
+
+    this.setState({
+      settings: {
+        isManual: isManual === 'true' ? true : false,
+        manualNote: manualNote
+      }
+    });
+    const remainingMilliseconds = new Date(manualSettingsExpiryDate).getTime() - new Date().getTime();
+    this.setAutoRemoveManualSettings(remainingMilliseconds);
+  }
+
+  onCancelConfirm = () => {
+    this.setState({
+      submitLoading: -1,
+      checkingStudentId: '',
+      showNoteModal: false
+    });
   }
 
   onToggleCheckAttendance = (studentId, isManuallyCheckingAttendance, index) => {
@@ -135,24 +151,17 @@ export default class Dashboard extends Component {
     });
   }
 
-  onCancelConfirm = () => {
-    this.setState({
-      submitLoading: -1,
-      checkingStudentId: '',
-      showNoteModal: false
-    });
-  }
-
-  onCheckingAttendance = (values) => {
-    const { isManuallyCheckingAttendance, checkingStudentId } = this.state;
+  onCheckingAttendance = (values, studentId = null, index = null) => {
+    const { isManuallyCheckingAttendance, checkingStudentId, settings } = this.state;
     const { _id } = this.state.currentCourse;
     const { note } = values;
 
     this.setState({ showNoteModal: false });
+    if (index) this.setState({ submitLoading: index });
 
-    if (isManuallyCheckingAttendance)
+    if (settings.isManual || isManuallyCheckingAttendance)
       axios.post('/lecturer/attendance', {
-        studentId: checkingStudentId,
+        studentId: studentId || checkingStudentId,
         courseId: _id,
         note
       }, {
@@ -209,7 +218,38 @@ export default class Dashboard extends Component {
   })
 
   onSettingsChanged = (values) => {
-    console.log(values)
+    console.log(values);
+    const { isManual, manualNote } = values;
+    localStorage.setItem('isManual', isManual);
+    localStorage.setItem('manualNote', manualNote);
+    const expiryDate = new Date(
+      new Date().getTime() + (60 * 60 * 168000) // a week time
+    );
+    localStorage.setItem('manualSettingsExpiryDate', expiryDate.toISOString());
+    this.setAutoRemoveManualSettings(expiryDate);
+    this.setState({
+      settings: {
+        isManual,
+        manualNote
+      },
+      showSettingsModal: false
+    });
+  }
+
+  removeManualSettingsHandler = () => {
+    this.setState({
+      settings: {
+        isManual: false,
+        manualNote: null
+      }
+    });
+    localStorage.removeItem('isManual');
+    localStorage.removeItem('manualNote');
+    localStorage.removeItem('manualSettingsExpiryDate');
+  }
+
+  setAutoRemoveManualSettings = (milliseconds) => {
+    setTimeout(() => this.removeManualSettingsHandler(), milliseconds);
   }
 
   render() {
@@ -430,7 +470,10 @@ export default class Dashboard extends Component {
                 unCheckedChildren={<CloseOutlined />}
                 checked={record.checkin !== 'Has not checked'}
                 loading={submitLoading === index}
-                onChange={(checked) => this.onToggleCheckAttendance(record._id, checked, index)}
+                onChange={(checked) => settings.isManual
+                  ? this.onCheckingAttendance({ note: settings.manualNote }, record._id, index)
+                  : this.onToggleCheckAttendance(record._id, checked, index)
+                }
               />
             </Space>
           )}
