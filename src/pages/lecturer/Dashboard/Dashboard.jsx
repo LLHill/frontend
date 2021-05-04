@@ -163,7 +163,7 @@ export default class Dashboard extends Component {
       axios.post('/lecturer/attendance', {
         studentId: studentId || checkingStudentId,
         courseId: _id,
-        note
+        note: [note]
       }, {
         headers: {
           'Authorization': `Bearer ${this.props.token}`
