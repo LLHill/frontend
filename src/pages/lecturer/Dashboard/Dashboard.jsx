@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react'
+import moment from 'moment'
 import openSocket from 'socket.io-client'
-import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin } from 'antd'
+import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table } from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons'
 import { Bar } from '@ant-design/charts';
 
@@ -11,42 +12,69 @@ import serverUrl from '../../../util/serverUrl'
 
 const { Meta } = Card;
 const { Text } = Typography;
+const { Column } = Table;
 
 export default class Dashboard extends Component {
   state = {
     loading: false,
     avtLoading: false,
-    currentCourse: null
+    currentCourse: null,
+    courseStudents: []
   }
 
   componentDidMount() {
-    this.setState({ loading: true })
+    this.setState({ loading: true });
     axios.get('/lecturer/current-course', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
       .then(res => {
-        // console.log(res.data)
+        console.log(res.data)
         return res.data;
       })
-      .then(data => this.setState({
-        loading: false,
-        currentCourse: data.currentCourse && data.currentCourse
-      }))
+      .then(data => {
+        if (data.currentCourse) {
+          // Add today to graph if not existed
+          const { attendanceGroupByDate } = data.currentCourse;
+          const today = moment().format("DD/MM/YYYY");
+          if (!attendanceGroupByDate.find(countDate => countDate.date === today))
+            attendanceGroupByDate.push({ count: 0, date: today });
+
+          this.setState({
+            loading: false,
+            currentCourse: {
+              ...data.currentCourse,
+              attendanceGroupByDate,
+              attendanceCount: data.currentCourse.currentAttendance.length
+            },
+            courseStudents: data.currentCourse.regStudents.map(student => {
+              const check = data.currentCourse.currentAttendance.find(a => a.studentId === student._id)
+              return {
+                ...student,
+                checkin: check ? moment(check.createdAt).format('HH:mm') : 'Has not checked'
+              };
+            })
+          });
+        } else {
+          this.setState({ loading: false });
+        }
+      })
       .catch(error => this.props.onError(error));
 
     const socket = openSocket(serverUrl);
     socket.on('attendance', data => {
-      console.log(data);
-      if (data.action === 'processing' && data.courseId === this.state.currentCourse._id)
+      console.log(this.state);
+      if (data.action === 'processing' && data.courseId === (this.state.currentCourse._id || ''))
         this.setState({ avtLoading: true });
-      if (data.action === 'create' && data.courseId === this.state.currentCourse._id) {
+      if (data.action === 'create' && data.courseId === (this.state.currentCourse._id || '')) {
         let currentAttendanceDate = this.state.currentCourse.attendanceGroupByDate.pop();
         currentAttendanceDate.count++;
+        const changedIndex = this.state.courseStudents.findIndex(s => s._id === data.attendance.studentId)
         this.setState({
           currentCourse: {
             ...this.state.currentCourse,
+            currentAttendance: [...this.state.currentCourse.currentAttendance, data.attendance],
             attendanceCount: this.state.currentCourse.attendanceCount + 1,
             recentAttendee: data.studentName,
             attendanceGroupByDate: [
@@ -54,6 +82,13 @@ export default class Dashboard extends Component {
               currentAttendanceDate
             ]
           },
+          courseStudents: this.state.courseStudents.map((student, index) =>
+            index === changedIndex ? {
+              ...student,
+              checkin: moment(data.attendance.createdAt).format('HH:mm')
+            } :
+              student
+          ),
           avtLoading: false
         });
       }
@@ -63,7 +98,7 @@ export default class Dashboard extends Component {
   }
 
   render() {
-    const { loading, avtLoading, currentCourse } = this.state
+    const { loading, avtLoading, currentCourse, courseStudents } = this.state
     let currentCourseChart = null
     let currentCourseCardMeta = (
       <Meta
@@ -125,7 +160,6 @@ export default class Dashboard extends Component {
       )
     }
 
-
     const currentCourseCard = (
       <Card
         style={{
@@ -145,6 +179,45 @@ export default class Dashboard extends Component {
       </Card>
     )
 
+    const table = (
+      <Table
+        dataSource={courseStudents}
+        rowKey='_id'
+        loading={loading}
+        pagination={{
+          total: courseStudents.length,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} students`,
+          defaultPageSize: 5,
+          defaultCurrent: 1
+        }}
+      >
+        <Column
+          title='Student ID'
+          key='id'
+          dataIndex='id'
+          defaultSortOrder={'descend'}
+          sorter={{
+            compare: (a, b) => a.id.localeCompare(b.id),
+            multiple: 1
+          }}
+        />
+        <Column
+          title='Student Name'
+          key='name'
+          dataIndex='name'
+        />
+        <Column
+          title='Checkin'
+          key='checkin'
+          dataIndex='checkin'
+          defaultSortOrder={'descend'}
+          sorter={{
+            compare: (a, b) => a.checkin.localeCompare(b.checkin),
+            multiple: 2
+          }} />
+      </Table>
+    )
+
     return (
       <div>
         <NavBreadcrumb
@@ -161,6 +234,13 @@ export default class Dashboard extends Component {
             {currentCourseChart}
           </Col>
         </Row>
+        <Row>
+          <Col>
+          </Col>
+        </Row>
+        <div style={{ marginTop: '20px' }}>
+          {table}
+        </div>
         {/* <Divider>Note:</Divider>
         <p>The lecturer's dashboard contains:</p>
         <ul>

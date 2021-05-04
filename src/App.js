@@ -57,29 +57,27 @@ class App extends Component {
         return res.data;
       })
       .then(resData => {
-        console.log(resData);
         this.setState({
           isAuth: true,
           token: resData.token,
-          userId: resData.userId,
+          userId: resData.token,
           isAdmin: isAdminLogin
         });
         localStorage.setItem('token', resData.token);
         localStorage.setItem('isAdmin', isAdminLogin);
         localStorage.setItem('userId', resData.userId);
-        const remainingMilliseconds = 60 * 60 * 1000; // 1hour
         const expiryDate = new Date(
-          new Date().getTime() + remainingMilliseconds
+          new Date().getTime() + resData.expireTime
         );
         localStorage.setItem('expiryDate', expiryDate.toISOString());
-        this.setAutoLogout(remainingMilliseconds);
+        this.setAutoLogout(resData.expireTime);
       })
       .catch(err => {
-        console.log(err)
+        console.log(err);
         this.setState({
           isAuth: false,
           error: err
-        })
+        });
       });
   };
 
