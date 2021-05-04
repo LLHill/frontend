@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import moment from 'moment'
 import openSocket from 'socket.io-client'
-import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table } from 'antd'
+import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table, Tag } from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons'
 import { Bar } from '@ant-design/charts';
 
@@ -209,7 +209,14 @@ export default class Dashboard extends Component {
         <Column
           title='Checkin'
           key='checkin'
-          dataIndex='checkin'
+          render={(text, record) => {
+            const color = record.checkin.length > 6 ? 'green' : 'volcano';
+            return (
+              <Tag color={color}>
+                {record.checkin}
+              </Tag>
+            )
+          }}
           defaultSortOrder={'descend'}
           sorter={{
             compare: (a, b) => a.checkin.localeCompare(b.checkin),
