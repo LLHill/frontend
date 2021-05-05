@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import moment from 'moment'
 import openSocket from 'socket.io-client'
-import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table, Tag } from 'antd'
-import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons'
+import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table, Tag, Switch, Modal, Form, AutoComplete, Button } from 'antd'
+import { EditOutlined, EllipsisOutlined, SettingOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons'
 import { Bar } from '@ant-design/charts';
 
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
@@ -13,10 +13,23 @@ import serverUrl from '../../../util/serverUrl'
 const { Meta } = Card;
 const { Text } = Typography;
 const { Column } = Table;
+const { Item } = Form;
 
+const layout = {
+  labelCol: { span: 8 },
+  wrapperCol: { span: 16 },
+};
+
+const tailLayout = {
+  wrapperCol: { offset: 8, span: 16 },
+};
 export default class Dashboard extends Component {
   state = {
     loading: false,
+    submitLoading: -1,
+    checkingStudentId: '',
+    isCheckingAttendance: false,
+    showModal: false,
     avtLoading: false,
     currentCourse: null,
     courseStudents: []
@@ -97,8 +110,86 @@ export default class Dashboard extends Component {
     });
   }
 
+  onToggleCheckAttendance = (studentId, isCheckingAttendance, index) => {
+    this.setState({
+      submitLoading: index,
+      checkingStudentId: studentId,
+      isCheckingAttendance,
+      showModal: true
+    });
+  }
+
+  onCancelConfirm = () => {
+    this.setState({
+      submitLoading: -1,
+      checkingStudentId: '',
+      showModal: false
+    });
+  }
+
+  onCheckingAttendance = (values) => {
+    const { isCheckingAttendance, checkingStudentId } = this.state;
+    const { _id } = this.state.currentCourse;
+    const { note } = values;
+
+    this.setState({ showModal: false });
+
+    if (isCheckingAttendance)
+      axios.post('/lecturer/attendance', {
+        studentId: checkingStudentId,
+        courseId: _id,
+        note
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.props.token}`
+        }
+      })
+        .then(res => {
+          console.log(res.data);
+          let currentAttendanceDate = this.state.currentCourse.attendanceGroupByDate.pop();
+          currentAttendanceDate.count++;
+          const changedIndex = this.state.courseStudents.findIndex(s => s._id === res.data.attendance.studentId)
+          this.setState({
+            currentCourse: {
+              ...this.state.currentCourse,
+              recentAttendee: res.data.studentName,
+              currentAttendance: [...this.state.currentCourse.currentAttendance, res.data.attendance],
+              attendanceCount: this.state.currentCourse.attendanceCount + 1,
+              attendanceGroupByDate: [
+                ...this.state.currentCourse.attendanceGroupByDate,
+                currentAttendanceDate
+              ]
+            },
+            courseStudents: this.state.courseStudents.map((student, index) =>
+              index === changedIndex ? {
+                ...student,
+                checkin: moment(res.data.attendance.createdAt).format('HH:mm')
+              } :
+                student
+            ),
+            submitLoading: -1
+          });
+        })
+        .catch(err => {
+          this.setState({ submitLoading: -1 });
+          this.props.onError(err);
+        });
+    else
+      axios.delete('/lecturer/attendance', {
+        studentId: checkingStudentId,
+        courseId: _id,
+        note
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.props.token}`
+        }
+      })
+        .then(res => { })
+        .catch(err => this.props.onError(err));
+  }
+
   render() {
-    const { loading, avtLoading, currentCourse, courseStudents } = this.state
+    const { loading, avtLoading, submitLoading, isCheckingAttendance, showModal, currentCourse, courseStudents } = this.state
     let currentCourseChart = null
     let currentCourseCardMeta = (
       <Meta
@@ -179,6 +270,57 @@ export default class Dashboard extends Component {
       </Card>
     )
 
+    const checkForm = (
+      <Modal
+        title={isCheckingAttendance ? 'Confirm Adding Attendance' : 'Confirm Removing Attendance'}
+        visible={showModal}
+        onCancel={this.onCancelConfirm}
+        footer={[]}
+      >
+        <Form
+          {...layout}
+          id={'checkingForm'}
+          onFinish={this.onCheckingAttendance}
+          onFinishFailed={null}
+        >
+          <Item
+            label='Note'
+            name='note'
+            rules={[{
+              required: true,
+              message: 'Please input the reason!'
+            }]}
+          >
+            <AutoComplete
+              options={isCheckingAttendance ? [
+                { value: 'Forgot card' },
+                { value: 'Lost card' },
+                { value: 'Sick leave' }
+              ] : [
+                { value: 'Mistake' },
+                { value: 'Cheating' },
+                { value: 'Missing most class time' }
+              ]}
+              placeholder='Input the reason'
+              filterOption={(inputValue, option) =>
+                option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+              }
+            />
+          </Item>
+          <Item {...tailLayout}>
+            <Button
+              type='primary'
+              htmlType='submit'
+            >Submit</Button>
+            <Button
+              type='link'
+              onClick={this.onCancelConfirm}
+            >Cancel</Button>
+          </Item>
+        </Form>
+      </Modal>
+    )
+
     const table = (
       <Table
         dataSource={courseStudents}
@@ -210,7 +352,7 @@ export default class Dashboard extends Component {
           title='Checkin'
           key='checkin'
           render={(text, record) => {
-            const color = record.checkin.length > 6 ? 'green' : 'volcano';
+            const color = record.checkin.length < 6 ? 'green' : 'volcano';
             return (
               <Tag color={color}>
                 {record.checkin}
@@ -222,6 +364,21 @@ export default class Dashboard extends Component {
             compare: (a, b) => a.checkin.localeCompare(b.checkin),
             multiple: 2
           }} />
+        <Column
+          title='Action'
+          key='action'
+          render={(text, record, index) => (
+            <Space size='middle'>
+              <Switch
+                checkedChildren={<CheckOutlined />}
+                unCheckedChildren={<CloseOutlined />}
+                checked={record.checkin !== 'Has not checked'}
+                loading={submitLoading === index}
+                onChange={(checked) => this.onToggleCheckAttendance(record._id, checked, index)}
+              />
+            </Space>
+          )}
+        />
       </Table>
     )
 
@@ -233,6 +390,7 @@ export default class Dashboard extends Component {
             { key: 2, text: 'Dashboard' },
           ]}
         />
+        {checkForm}
         <Row>
           <Col flex={2}>
             {currentCourseCard}
