@@ -62,6 +62,7 @@ const AntForm = props => {
         form={form}
         id={id}
         initialValues={initialValues}
+        colon={false}
       >
         {props.children}
       </Form>

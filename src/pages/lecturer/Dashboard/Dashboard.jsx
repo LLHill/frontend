@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import moment from 'moment'
 import openSocket from 'socket.io-client'
-import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table, Tag, Switch, Modal, Form, AutoComplete, Button } from 'antd'
+import { Row, Col, Skeleton, Card, Avatar, Typography, Space, Spin, Table, Tag, Switch, Modal, Form, Checkbox, Input, AutoComplete, Button } from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons'
 import { Bar } from '@ant-design/charts';
 
@@ -9,6 +9,7 @@ import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBread
 import axios from '../../../axios-instance'
 import { convertToWeekday } from '../../../util/weekday'
 import serverUrl from '../../../util/serverUrl'
+import AntForm from '../../../components/AntForm/AntForm'
 
 const { Meta } = Card;
 const { Text } = Typography;
@@ -28,34 +29,37 @@ export default class Dashboard extends Component {
     loading: false,
     submitLoading: -1,
     checkingStudentId: '',
-    isCheckingAttendance: false,
-    showModal: false,
-    avtLoading: false,
+    isManuallyCheckingAttendance: false,
+    showNoteModal: false,
+    newAttendanceLoading: false,
     currentCourse: null,
-    courseStudents: []
+    courseStudents: [],
+    showSettingsModal: false,
+    settings: {
+      isManual: false,
+      manualNote: ''
+    }
   }
 
   componentDidMount() {
     this.setState({ loading: true });
+    // get initial current class data
     axios.get('/lecturer/current-course', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
-      .then(res => {
-        console.log(res.data)
-        return res.data;
-      })
+      .then(res => res.data)
       .then(data => {
         if (data.currentCourse) {
           // Add today to graph if not existed
           const { attendanceGroupByDate } = data.currentCourse;
           const today = moment().format("DD/MM/YYYY");
-          if (!attendanceGroupByDate.find(countDate => countDate.date === today))
+          if (!attendanceGroupByDate.find(countDate => countDate.date === today)) {
             attendanceGroupByDate.push({ count: 0, date: today });
-
+          }
+          // setstate
           this.setState({
-            loading: false,
             currentCourse: {
               ...data.currentCourse,
               attendanceGroupByDate,
@@ -65,21 +69,23 @@ export default class Dashboard extends Component {
               const check = data.currentCourse.currentAttendance.find(a => a.studentId === student._id)
               return {
                 ...student,
-                checkin: check ? moment(check.createdAt).format('HH:mm') : 'Has not checked'
+                checkin: check === undefined ? 'Has not checked' : moment(check.createdAt).format('HH:mm')
               };
             })
           });
-        } else {
-          this.setState({ loading: false });
         }
       })
-      .catch(error => this.props.onError(error));
+      .then(() => this.setState({ loading: false }))
+      .catch(error => {
+        this.setState({ loading: false });
+        this.props.onError(error);
+      });
 
+    // set update current class data realtime
     const socket = openSocket(serverUrl);
     socket.on('attendance', data => {
-      console.log(this.state);
       if (data.action === 'processing' && data.courseId === (this.state.currentCourse._id || ''))
-        this.setState({ avtLoading: true });
+        this.setState({ newAttendanceLoading: true });
       if (data.action === 'create' && data.courseId === (this.state.currentCourse._id || '')) {
         let currentAttendanceDate = this.state.currentCourse.attendanceGroupByDate.pop();
         currentAttendanceDate.count++;
@@ -102,20 +108,30 @@ export default class Dashboard extends Component {
             } :
               student
           ),
-          avtLoading: false
+          newAttendanceLoading: false
         });
       }
       if ((data.action === 'update' || data.action === 'no-action') && data.courseId === this.state.currentCourse._id)
-        this.setState({ avtLoading: false });
+        this.setState({ newAttendanceLoading: false });
     });
+
+    // set state of settings based on localStorage
+    // const isManual = localStorage.getItem('isManual');
+    // const manualNote = localStorage.getItem('manualNote');
+    // this.setState({
+    //   settings: {
+    //     isManual: isManual,
+    //     manualNote: manualNote
+    //   }
+    // });
   }
 
-  onToggleCheckAttendance = (studentId, isCheckingAttendance, index) => {
+  onToggleCheckAttendance = (studentId, isManuallyCheckingAttendance, index) => {
     this.setState({
       submitLoading: index,
       checkingStudentId: studentId,
-      isCheckingAttendance,
-      showModal: true
+      isManuallyCheckingAttendance,
+      showNoteModal: true
     });
   }
 
@@ -123,18 +139,18 @@ export default class Dashboard extends Component {
     this.setState({
       submitLoading: -1,
       checkingStudentId: '',
-      showModal: false
+      showNoteModal: false
     });
   }
 
   onCheckingAttendance = (values) => {
-    const { isCheckingAttendance, checkingStudentId } = this.state;
+    const { isManuallyCheckingAttendance, checkingStudentId } = this.state;
     const { _id } = this.state.currentCourse;
     const { note } = values;
 
-    this.setState({ showModal: false });
+    this.setState({ showNoteModal: false });
 
-    if (isCheckingAttendance)
+    if (isManuallyCheckingAttendance)
       axios.post('/lecturer/attendance', {
         studentId: checkingStudentId,
         courseId: _id,
@@ -188,8 +204,21 @@ export default class Dashboard extends Component {
         .catch(err => this.props.onError(err));
   }
 
+  onToggleShowSettings = () => this.setState({
+    showSettingsModal: !this.state.showSettingsModal
+  })
+
+  onSettingsChanged = (values) => {
+    console.log(values)
+  }
+
   render() {
-    const { loading, avtLoading, submitLoading, isCheckingAttendance, showModal, currentCourse, courseStudents } = this.state
+    const {
+      loading, newAttendanceLoading, submitLoading,
+      isManuallyCheckingAttendance, showNoteModal,
+      showSettingsModal, settings,
+      currentCourse, courseStudents
+    } = this.state
     let currentCourseChart = null
     let currentCourseCardMeta = (
       <Meta
@@ -209,7 +238,7 @@ export default class Dashboard extends Component {
         <Fragment>
           <Meta
             avatar={
-              avtLoading ? <Spin /> :
+              newAttendanceLoading ? <Spin /> :
                 <Avatar
                   size={40}
                   style={{ color: '#f56a00', backgroundColor: '#fde3cf', fontSize: '28px' }}
@@ -223,7 +252,7 @@ export default class Dashboard extends Component {
             <Text>Room: {currentCourse.roomCode}</Text>
             <Text>Time: {convertToWeekday(currentCourse.weekday)} ({currentCourse.startPeriod} - {currentCourse.endPeriod})</Text>
             <Text>Recent Attendee: {currentCourse.recentAttendee !== ''
-              ? (avtLoading ? <Spin /> : currentCourse.recentAttendee)
+              ? (newAttendanceLoading ? <Spin /> : currentCourse.recentAttendee)
               : 'No one yet :D'
             }</Text>
           </Space>
@@ -259,7 +288,7 @@ export default class Dashboard extends Component {
           marginRight: 20
         }}
         actions={[
-          <SettingOutlined key="setting" />,
+          <SettingOutlined key="setting" onClick={this.onToggleShowSettings} />,
           <EditOutlined key="edit" />,
           <EllipsisOutlined key="ellipsis" />,
         ]}
@@ -270,10 +299,37 @@ export default class Dashboard extends Component {
       </Card>
     )
 
+    const settingsForm = (
+      <AntForm
+        visible={showSettingsModal}
+        title={'Class Settings'}
+        layout={{ ...layout }}
+        id={'settingsForm'}
+        initialValues={settings}
+        onFinish={this.onSettingsChanged}
+        onFinishFailed={null}
+        onCancel={this.onToggleShowSettings}
+      >
+        <Item
+          {...tailLayout}
+          name={'isManual'}
+          valuePropName='checked'
+        >
+          <Checkbox>Manual Check</Checkbox>
+        </Item>
+        <Item
+          label='Reason for Manual'
+          name='manualNote'
+        >
+          <Input />
+        </Item>
+      </AntForm>
+    )
+
     const checkForm = (
       <Modal
-        title={isCheckingAttendance ? 'Confirm Adding Attendance' : 'Confirm Removing Attendance'}
-        visible={showModal}
+        title={isManuallyCheckingAttendance ? 'Confirm Adding Attendance' : 'Confirm Removing Attendance'}
+        visible={showNoteModal}
         onCancel={this.onCancelConfirm}
         footer={[]}
       >
@@ -292,7 +348,7 @@ export default class Dashboard extends Component {
             }]}
           >
             <AutoComplete
-              options={isCheckingAttendance ? [
+              options={isManuallyCheckingAttendance ? [
                 { value: 'Forgot card' },
                 { value: 'Lost card' },
                 { value: 'Sick leave' }
@@ -326,7 +382,7 @@ export default class Dashboard extends Component {
         dataSource={courseStudents}
         rowKey='_id'
         loading={loading}
-        pagination={{
+        pagination={!settings.isManual && {
           total: courseStudents.length,
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} students`,
           defaultPageSize: 5,
@@ -390,6 +446,7 @@ export default class Dashboard extends Component {
             { key: 2, text: 'Dashboard' },
           ]}
         />
+        {settingsForm}
         {checkForm}
         <Row>
           <Col flex={2}>
