@@ -17,7 +17,8 @@ class App extends Component {
     token: null,
     userId: null,
     isAdmin: false,
-    error: null
+    error: null,
+    loginLoading: false
   };
 
   componentDidMount() {
@@ -41,7 +42,9 @@ class App extends Component {
 
   loginHandler = (values) => {
     const { isAdminLogin, email, password } = values;
-    console.log(values);
+    this.setState({
+      loginLoading: true
+    });
     let path = '/lecturer/login';
     if (isAdminLogin)
       path = '/admin/login';
@@ -61,7 +64,8 @@ class App extends Component {
           isAuth: true,
           token: resData.token,
           userId: resData.token,
-          isAdmin: isAdminLogin
+          isAdmin: isAdminLogin,
+          loginLoading: false
         });
         localStorage.setItem('token', resData.token);
         localStorage.setItem('isAdmin', isAdminLogin);
@@ -76,7 +80,8 @@ class App extends Component {
         console.log(err);
         this.setState({
           isAuth: false,
-          error: err
+          error: err,
+          loginLoading: false
         });
       });
   };
@@ -103,7 +108,7 @@ class App extends Component {
   }
 
   render() {
-    const { isAuth, token, userId, isAdmin, error } = this.state;
+    const { isAuth, token, userId, isAdmin, error, loginLoading } = this.state;
 
     let routes = (
       <Switch>
@@ -112,6 +117,7 @@ class App extends Component {
             <LoginLayout
               onLogin={this.loginHandler}
               onError={this.setError}
+              submitLoading={loginLoading}
             />
           )}
         />

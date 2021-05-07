@@ -13,7 +13,7 @@ export default class LoginLayout extends Component {
   };
 
   render() {
-    const { onLogin } = this.props;
+    const { onLogin, submitLoading } = this.props;
 
     return (
       <Fragment>
@@ -61,7 +61,7 @@ export default class LoginLayout extends Component {
                 </div>
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+                <Button loading={submitLoading} type="primary" htmlType="submit" style={{ width: '100%' }}>
                   Login
                 </Button>
               </Form.Item>
