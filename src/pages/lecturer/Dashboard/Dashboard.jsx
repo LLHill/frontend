@@ -69,7 +69,7 @@ export default class Dashboard extends Component {
               const check = data.currentCourse.currentAttendance.find(a => a.studentId === student._id)
               return {
                 ...student,
-                checkin: check === undefined ? 'Has not checked' : moment(check.createdAt).format('HH:mm')
+                checkin: check === undefined ? ['Has not checked'] : [moment(check.createdAt).format('HH:mm')]
               };
             })
           });
@@ -104,7 +104,7 @@ export default class Dashboard extends Component {
           courseStudents: this.state.courseStudents.map((student, index) =>
             index === changedIndex ? {
               ...student,
-              checkin: moment(data.attendance.createdAt).format('HH:mm')
+              checkin: [moment(data.attendance.createdAt).format('HH:mm')]
             } :
               student
           ),
@@ -188,7 +188,7 @@ export default class Dashboard extends Component {
             courseStudents: this.state.courseStudents.map((student, index) =>
               index === changedIndex ? {
                 ...student,
-                checkin: moment(res.data.attendance.createdAt).format('HH:mm')
+                checkin: [moment(res.data.attendance.createdAt).format('HH:mm'), this.state.settings.manualNote]
               } :
                 student
             ),
@@ -447,17 +447,29 @@ export default class Dashboard extends Component {
         <Column
           title='Checkin'
           key='checkin'
-          render={(text, record) => {
-            const color = record.checkin.length < 6 ? 'green' : 'volcano';
-            return (
-              <Tag color={color}>
-                {record.checkin}
-              </Tag>
-            )
-          }}
+          render={(text, record) => (
+            <>
+              {
+                Array.isArray(record.checkin)
+                  ? record.checkin.map(tag => {
+                    let color = tag.length < 6 ? 'green' : 'gold';
+                    if (tag === 'Has not checked')
+                      color = 'volcano';
+                    return (
+                      <Tag color={color}>
+                        {tag}
+                      </Tag>
+                    );
+                  })
+                  : <Tag color={'green'}>
+                    {record.checkin}
+                  </Tag>
+              }
+            </>
+          )}
           defaultSortOrder={!settings.isManual && 'descend'}
           sorter={!settings.isManual && {
-            compare: (a, b) => a.checkin.localeCompare(b.checkin),
+            compare: (a, b) => a.checkin[0].localeCompare(b.checkin[0]),
             multiple: 2
           }} />
         <Column
@@ -468,7 +480,7 @@ export default class Dashboard extends Component {
               <Switch
                 checkedChildren={<CheckOutlined />}
                 unCheckedChildren={<CloseOutlined />}
-                checked={record.checkin !== 'Has not checked'}
+                checked={record.checkin[0] !== 'Has not checked'}
                 loading={submitLoading === index}
                 onChange={(checked) => settings.isManual
                   ? this.onCheckingAttendance({ note: settings.manualNote }, record._id, index)
