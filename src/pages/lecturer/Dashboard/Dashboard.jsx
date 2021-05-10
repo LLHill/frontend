@@ -455,8 +455,8 @@ export default class Dashboard extends Component {
               </Tag>
             )
           }}
-          defaultSortOrder={'descend'}
-          sorter={{
+          defaultSortOrder={!settings.isManual && 'descend'}
+          sorter={!settings.isManual && {
             compare: (a, b) => a.checkin.localeCompare(b.checkin),
             multiple: 2
           }} />
