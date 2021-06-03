@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
+import fileSaver from 'file-saver'
 import { Table, Space, Button, Input } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
@@ -14,10 +16,12 @@ export default class Courses extends Component {
     subjects: [],
     students: [],
     searchText: '',
-    searchedColumn: ''
+    searchedColumn: '',
+    loading: false
   }
 
   componentDidMount() {
+    this.setState({ loading: true });
     axios.get('/lecturer/courses', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -29,10 +33,38 @@ export default class Courses extends Component {
         this.setState({
           courses,
           subjects,
-          students
+          students,
+          loading: false
         })
       })
-      .catch(err => this.props.onError(err));
+      .catch(err => {
+        this.props.onError(err)
+        this.setState({ loading: false })
+      });
+  }
+
+  downloadOverallReport = (courseId) => {
+    this.setState({ loading: true });
+    axios.get(`/lecturer/download-report/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${this.props.token}`
+      },
+      responseType: 'arraybuffer'
+    })
+      .then(res => {
+        const dirtyFileName = res.headers['content-disposition'];
+        // const regex = /filename[^;=\n]*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/;
+        // let fileName = dirtyFileName.match(regex)[3];
+        let blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        fileSaver.saveAs(blob, dirtyFileName);
+        this.setState({
+          loading: false
+        });
+      })
+      .catch(err => {
+        this.props.onError(err)
+        this.setState({ loading: false })
+      });
   }
 
   getSubject = (subjectId) => this.state.subjects.find(subject => subject._id === subjectId);
@@ -102,8 +134,8 @@ export default class Courses extends Component {
           textToHighlight={text ? text.toString() : ''}
         />
       ) : (
-          text
-        ),
+        text
+      ),
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -121,10 +153,10 @@ export default class Courses extends Component {
   // _______
 
   render() {
-    const { courses/*, subjects, students*/ } = this.state;
+    const { courses, loading/*, subjects, students*/ } = this.state;
 
     const table = (
-      <Table dataSource={courses} rowKey='_id'>
+      <Table dataSource={courses} rowKey='_id' loading={loading}>
         <Column
           title='Subject ID'
           key='subjectId'
@@ -138,7 +170,7 @@ export default class Courses extends Component {
           render={(text, record) => (
             this.getSubject(record.subjectId).name
           )}
-          // {...this.getColumnSearchProps('classType')}
+        // {...this.getColumnSearchProps('classType')}
         />
         <Column
           title='Class Type'
@@ -162,7 +194,7 @@ export default class Courses extends Component {
         <Column
           title='Room'
           key='room'
-          dataIndex='room'
+          render={(text, record) => record.roomId && record.roomId.code}
         />
         <Column
           title='Weekday'
@@ -192,7 +224,9 @@ export default class Courses extends Component {
           key='action'
           render={(text, record) => (
             <Space size='middle'>
-              <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button>
+              <Button type='primary'><Link to={`/reports/${record._id}`}>View attendances</Link></Button>
+              <Button type='default' onClick={() => this.downloadOverallReport(record._id)}>Download report</Button>
+              {/* <Button onClick={() => this.toggleUpdate(record._id)} type='default'>Update</Button> */}
             </Space>
           )}
         />
@@ -207,7 +241,7 @@ export default class Courses extends Component {
           ]}
         />
         {table}
-        <ul>
+        {/* <ul>
           <li>Table for courses</li>
           <li>
             <ul>
@@ -224,7 +258,7 @@ export default class Courses extends Component {
           </li>
           <li>Filters for type, periods</li>
           <li>Search for course name</li>
-        </ul>
+        </ul> */}
       </div>
     )
   }

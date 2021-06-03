@@ -1,46 +1,73 @@
-import React from 'react'
-import { Form, Button } from 'antd';
-
-const { Item } = Form;
+import React from 'react';
+import { Form, Button, Modal } from 'antd';
 
 const AntForm = props => {
   const [form] = Form.useForm();
 
-  const onReset = () => {
-    form.resetFields();
-  };
-
-  const { layout, tailLayout, id, onFinish, onFinishFailed, onCancel } = props;
+  const {
+    visible, title, loading,
+    layout, id, initialValues,
+    onFinish, onFinishFailed, onCancel
+  } = props;
 
   return (
-    <Form
-      {...layout}
-      form={form}
-      id={id}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-    >
-      {props.children}
-      <Item {...tailLayout}>
+    <Modal
+      visible={visible}
+      title={title}
+      onOk={() => {
+        form.validateFields()
+          .then(values => onFinish(values))
+          .then(res => form.resetFields())
+          .catch(info => onFinishFailed(info));
+      }}
+      onCancel={() => {
+        onCancel();
+        form.resetFields();
+      }}
+      footer={[
         <Button
+          key='submit'
           type='primary'
-          htmlType='submit'
-          style={{ marginRight: '10px'}}
-        >Submit</Button>
-        <Button 
-          htmlType="button" 
-          onClick={onReset}
+          loading={loading}
+          onClick={async () => {
+            await form.validateFields()
+              .then(values => onFinish(values))
+              .catch(info => onFinishFailed(info));
+            form.resetFields();
+          }}
+        >
+          Submit
+        </Button>,
+        <Button
+          key='reset'
+          type='default'
+          onClick={() => form.resetFields()}
         >
           Reset
-        </Button>
+        </Button>,
         <Button
-          type='link'
-          htmlType="button"
-          onClick={onCancel}
-        >Cancel</Button>
-      </Item>
-    </Form>
-  )
-}
+          key='cancel'
+          type='default'
+          onClick={() => {
+            onCancel();
+            form.resetFields();
+          }}
+        >
+          Cancel
+        </Button>
+      ]}
+    >
+      <Form
+        {...layout}
+        form={form}
+        id={id}
+        initialValues={initialValues}
+        colon={false}
+      >
+        {props.children}
+      </Form>
+    </Modal >
+  );
+};
 
-export default AntForm
+export default AntForm;

@@ -1,7 +1,7 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
 import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, InputNumber, Modal } from 'antd'
+import { Table, Space, Button, Form, Input, InputNumber, Modal, message } from 'antd'
 import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 
 import axios from '../../../axios-instance'
@@ -22,9 +22,11 @@ export default class Subjects extends Component {
     subjects: [],
     showForm: false,
     confirmLoading: false,
+    loading: false
   }
 
   componentDidMount() {
+    this.setState({ loading: true });
     axios.get('/admin/subjects', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -32,10 +34,9 @@ export default class Subjects extends Component {
     })
       .then(res => res.data)
       .then(resData => {
-        console.log(resData)
-        return resData
+        this.setSubjects(resData.subjects);
+        this.setState({ loading: false });
       })
-      .then(resData => this.setSubjects(resData.subjects))
       .catch(err => this.props.onError(err));
   }
 
@@ -52,24 +53,22 @@ export default class Subjects extends Component {
   }
 
   createSubjectHandler = (values) => {
-    console.log(values)
     axios.post('/admin/subject', values, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
       .then(res => {
-        console.log(res)
         if (res.status === 201) {
           this.setState({ showForm: false });
           this.setSubjects([...this.state.subjects, res.data.subject]);
+          message.success(res.data.message || 'New Subject Created :D');
         }
       })
       .catch(err => this.props.onError(err));
   }
 
   deleteSubjectHandler = (subjectId) => {
-    console.log(subjectId)
     axios.delete('/admin/subject/' + subjectId, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -77,17 +76,19 @@ export default class Subjects extends Component {
     })
       .then(res => {
         console.log(res)
-        if (res.status === 200)
+        if (res.status === 200) {
           this.setSubjects(this.state.subjects.filter(subject => subject._id !== subjectId));
+          message.success(res.data.message || 'Subject Deleted :D');
+        }
       })
       .catch(err => this.props.onError(err));
   }
 
   render() {
-    const { subjects, showForm, confirmLoading } = this.state;
+    const { subjects, showForm, confirmLoading, loading } = this.state;
 
     const table = (
-      <Table dataSource={subjects} rowKey='_id'>
+      <Table dataSource={subjects} rowKey='_id' loading={loading}>
         <Column
           title='Subject ID'
           dataIndex='id'
@@ -103,17 +104,20 @@ export default class Subjects extends Component {
             title='Theory Credit(s)'
             dataIndex='creditTheory'
             key='creditTheory'
+            align='right'
           />
           <Column
             title='Laboratory Credit(s)'
             dataIndex='creditLab'
             key='creditLab'
+            align='right'
           />
         </ColumnGroup>
         <Column
           title='Course Number'
           dataIndex='courseNo'
           key='courseNo'
+          align='right'
         />
         <Column
           title='Action'
@@ -196,9 +200,6 @@ export default class Subjects extends Component {
               type='primary'
               htmlType='submit'
             >Submit</Button>
-            {/* <Button
-                htmlType='reset'
-              >Reset</Button> */}
             <Button
               type='link'
               onClick={this.toggleForm}

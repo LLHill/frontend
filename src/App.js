@@ -6,6 +6,7 @@ import 'antd/dist/antd.css'; // or 'antd/dist/antd.less'
 import AdminLayout from './layouts/AdminLayout/AdminLayout';
 import LecturerLayout from './layouts/LecturerLayout/LecturerLayout';
 import LoginLayout from './layouts/LoginLayout/LoginLayout';
+import ChangePassword from './layouts/ChangePassword/ChangePassword';
 
 import axios from './axios-instance';
 import { ErrorHandler } from './components/ErrorHandler/ErrorHandler';
@@ -16,7 +17,8 @@ class App extends Component {
     token: null,
     userId: null,
     isAdmin: false,
-    error: null
+    error: null,
+    loginLoading: false
   };
 
   componentDidMount() {
@@ -40,7 +42,9 @@ class App extends Component {
 
   loginHandler = (values) => {
     const { isAdminLogin, email, password } = values;
-    console.log(values);
+    this.setState({
+      loginLoading: true
+    });
     let path = '/lecturer/login';
     if (isAdminLogin)
       path = '/admin/login';
@@ -56,29 +60,29 @@ class App extends Component {
         return res.data;
       })
       .then(resData => {
-        console.log(resData);
         this.setState({
           isAuth: true,
           token: resData.token,
-          userId: resData.userId,
-          isAdmin: isAdminLogin
+          userId: resData.token,
+          isAdmin: isAdminLogin,
+          loginLoading: false
         });
         localStorage.setItem('token', resData.token);
         localStorage.setItem('isAdmin', isAdminLogin);
         localStorage.setItem('userId', resData.userId);
-        const remainingMilliseconds = 60 * 60 * 1000; // 1hour
         const expiryDate = new Date(
-          new Date().getTime() + remainingMilliseconds
+          new Date().getTime() + resData.expireTime
         );
         localStorage.setItem('expiryDate', expiryDate.toISOString());
-        this.setAutoLogout(remainingMilliseconds);
+        this.setAutoLogout(resData.expireTime);
       })
       .catch(err => {
-        console.log(err)
+        console.log(err);
         this.setState({
           isAuth: false,
-          error: err
-        })
+          error: err,
+          loginLoading: false
+        });
       });
   };
 
@@ -104,7 +108,7 @@ class App extends Component {
   }
 
   render() {
-    const { isAuth, token, userId, isAdmin, error } = this.state;
+    const { isAuth, token, userId, isAdmin, error, loginLoading } = this.state;
 
     let routes = (
       <Switch>
@@ -113,6 +117,7 @@ class App extends Component {
             <LoginLayout
               onLogin={this.loginHandler}
               onError={this.setError}
+              submitLoading={loginLoading}
             />
           )}
         />
@@ -123,26 +128,43 @@ class App extends Component {
     if (isAuth)
       routes = (
         isAdmin ?
-          <Route path='/'
-            render={() => (
-              <AdminLayout
-                token={token}
-                userId={userId}
-                onLogout={this.logoutHandler}
-                onError={this.setError}
-              />
-            )}
-          /> :
-          <Route path='/'
-            render={() => (
-              <LecturerLayout
-                token={token}
-                userId={userId}
-                onLogout={this.logoutHandler}
-                onError={this.setError}
-              />
-            )}
-          />
+          <Switch>
+            <Route
+              path='/password'
+              render={() => (
+                <ChangePassword />
+              )}
+            />
+            <Route path='/'
+              render={() => (
+                <AdminLayout
+                  token={token}
+                  userId={userId}
+                  onLogout={this.logoutHandler}
+                  onError={this.setError}
+                />
+              )}
+            />
+          </Switch>
+          :
+          <Switch>
+            <Route
+              path='/password'
+              render={() => (
+                <ChangePassword />
+              )}
+            />
+            <Route path='/'
+              render={() => (
+                <LecturerLayout
+                  token={token}
+                  userId={userId}
+                  onLogout={this.logoutHandler}
+                  onError={this.setError}
+                />
+              )}
+            />
+          </Switch>
       );
     return (
       <Fragment>
@@ -156,3 +178,8 @@ class App extends Component {
 };
 
 export default withRouter(App);
+
+/*
+  TODO:
+  Add loading to table
+ */

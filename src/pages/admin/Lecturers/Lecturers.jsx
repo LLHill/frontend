@@ -1,10 +1,11 @@
 import Title from 'antd/lib/typography/Title'
 import React, { Component, Fragment } from 'react'
-import { Link } from 'react-router-dom'
-import { Table, Space, Button, Form, Input, Modal } from 'antd'
-import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
+// import { Link } from 'react-router-dom'
+import { Table, Space, Button, Form, Input, Modal, Popconfirm, message } from 'antd'
 
+import NavBreadcrumb from '../../../components/Navigation/NavBreadcrumb/NavBreadcrumb'
 import axios from '../../../axios-instance'
+
 
 const layout = {
   labelCol: { span: 8 },
@@ -19,10 +20,13 @@ export default class Lecturers extends Component {
   state = {
     lecturers: [],
     showForm: false,
-    confirmLoading: false,
+    loading: false,
+    showPopconfirm: -1,
+    confirmLoading: false
   }
 
   componentDidMount() {
+    this.setState({ loading: true });
     axios.get('/admin/lecturers', {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -30,14 +34,15 @@ export default class Lecturers extends Component {
     })
       .then(res => res.data)
       .then(resData => {
-        console.log(resData)
-        return resData
+        this.setLecturers(resData.lecturers);
+        this.setState({ loading: false });
       })
-      .then(resData => this.setLecturers(resData.lecturers))
       .catch(err => this.props.onError(err));
   }
 
-  toggleForm = () => this.setState({ showForm: !this.state.showForm })
+  toggleForm = () => this.setState({ showForm: !this.state.showForm, showPopconfirm: -1 })
+
+  toggleShowPopconfirm = (index = -1) => this.setState({ showPopconfirm: index })
 
   setLecturers = (lecturerData) => {
     const lecturers = lecturerData.map(lec => {
@@ -50,17 +55,17 @@ export default class Lecturers extends Component {
   }
 
   createLecturerHandler = (values) => {
-    console.log(values)
+    this.setState({ confirmLoading: true });
     axios.post('/admin/lecturer', values, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
       .then(res => {
-        console.log(res)
         if (res.status === 201) {
-          this.setState({ showForm: false });
+          this.setState({ showForm: false, confirmLoading: false });
           this.setLecturers([...this.state.lecturers, res.data.lecturer]);
+          message.success(res.data.message || 'Create new lecturer :D');
         }
       })
       .catch(err => this.props.onError(err));
@@ -68,23 +73,21 @@ export default class Lecturers extends Component {
 
   updatePasswordHandler = (lecturerId) => {
     const newPassword = Math.random().toString(36).slice(-8);
-    console.log(newPassword)
+    console.log(newPassword);
     axios.put('/admin/lecturer-password', {
       lecturerId: lecturerId,
-      newPassword: newPassword
+      newPassword: "123456"
     }, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
       }
     })
-      .then(res => {
-        console.log(res);
-      })
+      .then(res => message.success(res.data.message || 'Lecturer\'s Password Changed :D'))
       .catch(err => this.props.onError(err));
   }
 
   deleteLecturerHandler = (lecturerId) => {
-    console.log(lecturerId)
+    this.setState({ confirmLoading: true });
     axios.delete('/admin/lecturer/' + lecturerId, {
       headers: {
         'Authorization': `Bearer ${this.props.token}`
@@ -92,14 +95,17 @@ export default class Lecturers extends Component {
     })
       .then(res => {
         console.log(res)
-        if (res.status === 200)
+        if (res.status === 200) {
           this.setLecturers(this.state.lecturers.filter(lec => lec._id !== lecturerId));
+          this.setState({ confirmLoading: false, showPopconfirm: -1 });
+          message.success(res.data.message || 'Lecturer Deleted :D');
+        }
       })
       .catch(err => this.props.onError(err));
   }
 
   render() {
-    const { lecturers, showForm, confirmLoading } = this.state;
+    const { lecturers, showForm, loading, showPopconfirm, confirmLoading } = this.state;
 
     const columns = [
       {
@@ -120,11 +126,19 @@ export default class Lecturers extends Component {
       {
         title: 'Action',
         key: 'action',
-        render: (text, record) => (
+        render: (text, record, index) => (
           <Space size='middle'>
-            <Button type='primary'><Link to={`/courses?lecturerId=${record._id}`}>View courses</Link></Button>
+            {/* <Button type='primary'><Link to={`/courses?lecturerId=${record._id}`}>View courses</Link></Button> */}
             <Button onClick={() => this.updatePasswordHandler(record._id)}>Update Password</Button>
-            <Button onClick={() => this.deleteLecturerHandler(record._id)} danger type='link'>Delete</Button>
+            <Popconfirm
+              title='Are you sure?'
+              visible={showPopconfirm === index}
+              onConfirm={() => this.deleteLecturerHandler(record._id)}
+              okButtonProps={{ loading: confirmLoading }}
+              onCancel={this.toggleShowPopconfirm}
+            >
+              <Button onClick={() => this.toggleShowPopconfirm(index)} danger type='link'>Delete</Button>
+            </Popconfirm>
           </Space>
         )
       }
@@ -133,8 +147,8 @@ export default class Lecturers extends Component {
     const form = (
       <Modal
         title={'Create New Lecturer'}
-        visible={showForm}
         confirmLoading={confirmLoading}
+        visible={showForm}
         onCancel={this.toggleForm}
         footer={[]}
       >
@@ -182,9 +196,6 @@ export default class Lecturers extends Component {
               type='primary'
               htmlType='submit'
             >Submit</Button>
-            {/* <Button
-                htmlType='reset'
-              >Reset</Button> */}
             <Button
               type='link'
               onClick={this.toggleForm}
@@ -206,7 +217,7 @@ export default class Lecturers extends Component {
           <Title level={3}>Lecturer List</Title>
           <Button type='primary' onClick={this.toggleForm}>Add new lecturer</Button>
         </div>
-        <Table dataSource={lecturers} columns={columns} rowKey='_id' />
+        <Table dataSource={lecturers} columns={columns} rowKey='_id' loading={loading} />
         {form}
       </Fragment>
     )
