@@ -7,6 +7,7 @@ import AdminLayout from './layouts/AdminLayout/AdminLayout';
 import LecturerLayout from './layouts/LecturerLayout/LecturerLayout';
 import LoginLayout from './layouts/LoginLayout/LoginLayout';
 import ChangePassword from './layouts/ChangePassword/ChangePassword';
+import WebcamLayout from './layouts/WebcamLayout/WebcamLayout';
 
 import axios from './axios-instance';
 import { ErrorHandler } from './components/ErrorHandler/ErrorHandler';
