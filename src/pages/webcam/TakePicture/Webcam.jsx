@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Webcam from "react-webcam";
-import {Button} from 'antd'
+import {Button} from 'antd';
+import axios from 'axios'
 
 
 // const WebcamComponent = () => <Webcam />;
@@ -20,7 +21,17 @@ export const WebcamCapture = () => {
     const capture = React.useCallback(
         () => {
         const imageSrc = webcamRef.current.getScreenshot();
-        setImage(imageSrc)
+        var ret = imageSrc.replace('data:image/jpeg;base64,','');
+        axios({
+            method: 'post',
+            url: 'https://api.iuresearchteam.online/algo',
+            headers: {
+                'Content-Type': 'text/plain'
+            }, 
+            data: ret,
+          }).then(response=>console.log(response));
+        // console.log(ret)
+        // setImage(imageSrc)
         });
 
 
@@ -39,13 +50,13 @@ export const WebcamCapture = () => {
             </div>
             <div>
                 {image !== '' ?
-                    <Button type='default' onClick={(e) => {
+                    <Button type='primary' onClick={(e) => {
                         e.preventDefault();
                         setImage('')
                     }}
                         className="webcam-btn">
                         Retake Image</Button> :
-                    <Button type='default' onClick={(e) => {
+                    <Button type='primary' onClick={(e) => {
                         e.preventDefault();
                         capture();
                     }}

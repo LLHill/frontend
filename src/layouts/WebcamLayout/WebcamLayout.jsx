@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Switch, Route } from "react-router-dom";
+import SideDrawer from '../../components/Navigation/SideDrawer/SideDrawer';
 
 import { Layout, Typography } from 'antd';
 import {
@@ -19,15 +20,16 @@ export default class WebcamLayout extends Component {
       <Layout style={{ minHeight: '100vh' }}>
         <SideDrawer
           elements={[
-            { key: 1, text: 'Take Picture', to: '/takepicture', icon: <CameraOutlined /> }
+            { key: 1, text: 'Take Picture', to: '/webcam', icon: <CameraOutlined /> }
           ]}
         />
         <Layout className="site-layout">
           <Content style={{ margin: '0 16px' }}>
-            <Switch>
+            {/* <Switch>
               <Route path={`/takepicture`} render={() => <TakePicture {...this.props} />} />
               <Route component={() => <Title>404 Not Found</Title>} />
-            </Switch>
+            </Switch> */}
+             <TakePicture {...this.props} />
           </Content>
           <Footer style={{ textAlign: 'center' }}>Presence ©2021 Created by HCMIU</Footer>
         </Layout>
